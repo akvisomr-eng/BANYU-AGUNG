@@ -2,12 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 
 export default function SignInPage() {
   const router = useRouter();
-  const params = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +22,7 @@ export default function SignInPage() {
         setError(result.error.message || "Email atau kata sandi tidak valid.");
         return;
       }
-      const requested = params.get("redirectTo") || "/workspace";
+      const requested = new URLSearchParams(window.location.search).get("redirectTo") || "/workspace";
       router.replace(requested.startsWith("/") && !requested.startsWith("//") ? requested : "/workspace");
       router.refresh();
     } catch {
