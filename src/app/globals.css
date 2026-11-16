@@ -95,7 +95,7 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .novemberMobileNav nav a:hover{background:var(--nov-ice)}
 .novemberHero{position:relative;min-height:620px;display:flex;align-items:center;background:#123b56;isolation:isolate}
 .novemberHeroImage,.novemberHeroShade{position:absolute;inset:0;z-index:-1}
-.novemberHeroImage{background-image:url("https://images.unsplash.com/photo-1437482078695-73f2ca6c96e2?auto=format&fit=crop&w=2000&q=90");background-size:cover;background-position:center 48%;filter:saturate(.78)}
+.novemberHeroImage{background-image:url("https://images.unsplash.com/photo-1725183514517-079893b5ab50?auto=format&fit=crop&w=2200&q=90");background-size:cover;background-position:center 48%;filter:saturate(.78)}
 .novemberHeroShade{background:linear-gradient(90deg,#0d3654ed 0%,#174d6bc9 49%,#1c638a4d 100%)}
 .novemberHeroContent{max-width:1240px;width:100%;margin:0 auto;padding:105px 7.5% 125px;color:#fff}
 .novemberEyebrow{font-size:10px;letter-spacing:.22em;font-weight:700;color:#b5e2f4}
@@ -162,7 +162,7 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .novemberVideoLinks a{background:#fff;padding:14px 16px;text-decoration:none;color:#357b9f;font-size:11px;border:1px solid #d5e7ef}
 .novemberVideoLinks a:hover{background:#d4ebf6}
 .novemberQuality{background:#123b56;color:#fff;display:grid;grid-template-columns:.85fr 1.15fr;min-height:540px}
-.novemberQualityPhoto{background:linear-gradient(180deg,#0e527045,#0c385c35),url("https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=1200&q=85") center/cover;min-height:420px}
+.novemberQualityPhoto{background:linear-gradient(180deg,#0e527045,#0c385c35),url("https://images.unsplash.com/photo-1639256150782-ecdb00b01e84?auto=format&fit=crop&w=1400&q=85") center/cover;min-height:420px}
 .novemberQualityContent{padding:85px max(7%,calc((100vw - 1200px)/2));padding-left:8%;padding-right:10%;align-self:center}
 .novemberQuality .novemberSectionNumber{color:#91d3ee}
 .novemberQuality .novemberSectionNumber span{color:#a5c1d0}
@@ -201,3 +201,10 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 @media(max-width:800px){.novemberDesktopNav{display:none}.novemberMobileNav{display:block}.novemberHeader{height:72px}.novemberHero{min-height:570px}.novemberHeroContent{padding:90px 7% 115px}.novemberIntro,.novemberProducts,.novemberGallery,.novemberContact{padding:78px 7%}.novemberIntroGrid{grid-template-columns:1fr;gap:25px}.novemberSectionHeading{display:block}.novemberSectionHeading>p{margin-top:18px}.novemberProductGrid{grid-template-columns:1fr 1fr}.novemberGalleryGrid{grid-template-columns:1fr 1fr}.novemberGalleryItem1{grid-column:span 2}.novemberGalleryItem1 .novemberGalleryPhoto{height:280px}.novemberQuality{grid-template-columns:1fr}.novemberQualityPhoto{min-height:300px}.novemberQualityContent{padding:65px 7%}.novemberContact{grid-template-columns:1fr;gap:35px}.novemberFooter{padding:35px 7%;grid-template-columns:1fr auto}.novemberFooter>small{grid-column:1/3}.novemberFooter>a:last-child{grid-column:2;grid-row:1}}
 @media(max-width:560px){.novemberHeaderInner{padding:0 18px}.novemberHero{min-height:540px}.novemberHeroContent{padding:75px 7% 110px}.novemberHero h1{font-size:48px}.novemberHeroContent>p:not(.novemberEyebrow){font-size:13px}.novemberHeroActions{align-items:flex-start;flex-direction:column;gap:18px}.novemberHeroIndex{right:7%;bottom:22px}.novemberIntro,.novemberProducts,.novemberGallery,.novemberContact{padding:65px 7%}.novemberIntro h2,.novemberSectionHeading h2,.novemberQuality h2,.novemberContact h2{font-size:39px}.novemberIntroRule{margin-top:40px;gap:12px;flex-direction:column}.novemberProductGrid,.novemberGalleryGrid{grid-template-columns:1fr}.novemberGalleryItem1{grid-column:auto}.novemberGalleryItem1 .novemberGalleryPhoto,.novemberGalleryPhoto{height:240px}.novemberVideoBand{padding:25px 20px;grid-template-columns:1fr;gap:20px}.novemberQualityPhoto{min-height:240px}.novemberQualityContent{padding:55px 7%}.novemberPartner{padding:75px 7%}.novemberPartner h2{font-size:43px}.novemberContactList strong{font-size:16px}.novemberFooter{grid-template-columns:1fr;gap:15px}.novemberFooter>small,.novemberFooter>a:last-child{grid-column:1;grid-row:auto}.novemberFooter .novemberLogo{width:max-content}}
 @media(prefers-reduced-motion:reduce){.novemberSite *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Photo-source credits for the public water brand website */
+.novemberHeroIndex a{color:#d5ebf5;text-decoration:none;font-size:9px;letter-spacing:.04em;border-bottom:1px solid #ffffff65;padding-bottom:3px}
+.novemberHeroIndex a:hover{color:#fff;border-color:#fff}
+.novemberPhotoCredit{font-size:9px!important;color:#3d83a4!important;text-decoration:none;letter-spacing:.02em;margin-top:2px}
+.novemberPhotoCredit:hover{text-decoration:underline}
+.novemberImageNote a{color:#357b9f;text-decoration:underline}
