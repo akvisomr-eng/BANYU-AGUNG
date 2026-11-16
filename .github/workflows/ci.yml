@@ -16,4 +16,9 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm run build
+      # Build-time placeholders only; production credentials must be configured in Vercel.
+      - name: Build
+        run: npm run build
+        env:
+          NEON_AUTH_BASE_URL: https://example.neon.tech
+          NEON_AUTH_COOKIE_SECRET: ci-only-placeholder-secret-not-for-production-32chars
