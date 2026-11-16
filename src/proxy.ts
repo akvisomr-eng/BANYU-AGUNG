@@ -1,10 +1,11 @@
 import { auth } from "@/lib/auth/server";
 
+// The installed Neon Auth SDK exposes loginUrl in its middleware options.
+// Protect only the ERP workspace; the public marketing site stays public.
 export default auth.middleware({
   loginUrl: "/auth/sign-in",
-  publicRoutes: ["/"],
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/workspace/:path*"],
 };
