@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS user_role_assignments (
   role_id uuid NOT NULL REFERENCES roles(id),
   site_id uuid REFERENCES sites(id),
   assigned_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (user_id, role_id, site_id)
+  UNIQUE NULLS NOT DISTINCT (user_id, role_id, site_id)
 );
 CREATE TABLE IF NOT EXISTS customers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
