@@ -7,9 +7,30 @@ const products = [
 ];
 
 const gallery = [
-  { title: "Alam dan sumber air", text: "Foto ilustrasi alam, bukan dokumentasi sumber produksi BANYU AGUNG.", src: "https://images.unsplash.com/photo-1437482078695-73f2ca6c96e2?auto=format&fit=crop&w=1200&q=85", alt: "Aliran air di tengah alam hijau" },
-  { title: "Kesegaran setiap hari", text: "Foto ilustrasi air minum untuk kebutuhan pelanggan.", src: "https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=1000&q=85", alt: "Gelas berisi air minum" },
-  { title: "Proses dan ketelitian", text: "Foto ilustrasi lingkungan kerja, bukan fasilitas produksi BANYU AGUNG.", src: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1000&q=85", alt: "Lingkungan kerja industri" },
+  {
+    title: "Aliran air di alam Indonesia",
+    text: "Inspirasi visual tentang alam dan aliran air; bukan lokasi sumber produksi BANYU AGUNG.",
+    src: "https://images.unsplash.com/photo-1725183514517-079893b5ab50?auto=format&fit=crop&w=1400&q=85",
+    alt: "Aliran sungai jernih di tengah hutan hijau",
+    credit: "Walyudin",
+    source: "https://unsplash.com/photos/a-stream-running-through-a-lush-green-forest-Pgf1bvKH6Mw",
+  },
+  {
+    title: "Air minum yang menyegarkan",
+    text: "Foto ilustrasi air minum dalam botol dan gelas; bukan foto produk resmi.",
+    src: "https://images.unsplash.com/photo-1639256150782-ecdb00b01e84?auto=format&fit=crop&w=1100&q=85",
+    alt: "Botol air dan gelas berisi air minum",
+    credit: "Greg Rosenke",
+    source: "https://unsplash.com/photos/a-bottle-of-water-next-to-a-glass-of-water-hpHM0OlOHT0",
+  },
+  {
+    title: "Kemasan air minum",
+    text: "Foto ilustrasi kemasan air; bukan desain atau merek dagang produk BANYU AGUNG.",
+    src: "https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=1100&q=85",
+    alt: "Botol bening berisi air minum dengan pencahayaan alami",
+    credit: "Steve A Johnson",
+    source: "https://unsplash.com/photos/clear-drinking-bottle-filled-with-water-N-MqWXXZvNY",
+  },
 ];
 
 const contacts = [
@@ -59,7 +80,7 @@ export default function Home() {
               <a href="#tentang" className="novemberTextButton">Kenali Perusahaan <span>↓</span></a>
             </div>
           </div>
-          <div className="novemberHeroIndex"><strong>01</strong><span>QUALITY · CARE · TRUST</span></div>
+          <div className="novemberHeroIndex"><strong>01</strong><span>QUALITY · CARE · TRUST</span><a href="https://unsplash.com/photos/a-stream-running-through-a-lush-green-forest-Pgf1bvKH6Mw" target="_blank" rel="noreferrer">Foto: Walyudin / Unsplash ↗</a></div>
         </section>
 
         <section className="novemberIntro" id="tentang">
@@ -100,10 +121,10 @@ export default function Home() {
           <div className="novemberGalleryGrid">
             {gallery.map((item, index) => <figure className={`novemberGalleryItem novemberGalleryItem${index + 1}`} key={item.title}>
               <div className="novemberGalleryPhoto"><img src={item.src} alt={item.alt} loading="lazy" /></div>
-              <figcaption><span>0{index + 1} / VISUAL STORY</span><strong>{item.title}</strong><small>{item.text}</small></figcaption>
+              <figcaption><span>0{index + 1} / VISUAL STORY</span><strong>{item.title}</strong><small>{item.text}</small><a className="novemberPhotoCredit" href={item.source} target="_blank" rel="noreferrer">Foto: {item.credit} / Unsplash ↗</a></figcaption>
             </figure>)}
           </div>
-          <p className="novemberImageNote">Foto ilustrasi: Unsplash. Gambar bukan bukti sumber air, hasil produksi, atau fasilitas milik BANYU AGUNG.</p>
+          <p className="novemberImageNote">Seluruh foto pada bagian ini merupakan foto stok yang tersedia di bawah Unsplash License. Foto hanya ilustrasi dan bukan dokumentasi sumber air, produk, kemasan, laboratorium, atau fasilitas milik BANYU AGUNG. <a href="https://unsplash.com/license" target="_blank" rel="noreferrer">Baca lisensi Unsplash ↗</a></p>
           <div className="novemberVideoBand">
             <div><span className="novemberEyebrow">VIDEO / REFERENSI VISUAL</span><h3>Menampilkan cerita air dengan lebih dekat.</h3><p>Footage bertema mata air, aliran air, dan alam dapat dipilih dari pustaka berlisensi dengan menyimpan halaman sumber dan bukti lisensinya.</p></div>
             <div className="novemberVideoLinks">
