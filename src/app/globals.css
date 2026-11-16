@@ -69,3 +69,135 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
  .siteMain footer{padding:38px 7vw}
 }
 @media(prefers-reduced-motion:reduce){.siteMain *, .sentraSidebar *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* TemplateMo November-inspired public website redesign */
+.novemberSite{--nov-blue:#2f7fa8;--nov-deep:#123b56;--nov-ice:#e9f5fb;--nov-pale:#f5fafc;--nov-line:#d5e7ef;--nov-text:#234355;--nov-muted:#6e8795;background:#fff;color:var(--nov-text);font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.novemberSite *{box-sizing:border-box}
+.novemberSite a{transition:color .2s ease,background .2s ease,border-color .2s ease,transform .2s ease}
+.novemberSite section[id]{scroll-margin-top:88px}
+.novemberHeader{height:82px;position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid var(--nov-line);box-shadow:0 3px 16px #173f5510}
+.novemberHeaderInner{height:100%;max-width:1240px;margin:auto;padding:0 34px;display:flex;align-items:center;justify-content:space-between;gap:28px}
+.novemberLogo{display:flex;align-items:center;gap:11px;color:var(--nov-deep);text-decoration:none;min-width:max-content}
+.novemberLogoMark{width:43px;height:43px;display:grid;place-items:center;background:var(--nov-blue);color:#fff;border-radius:3px;font-family:Georgia,serif;font-size:20px;letter-spacing:-2px}
+.novemberLogoText{font-size:15px;font-weight:800;letter-spacing:.12em;line-height:1.2}
+.novemberLogoText b{color:var(--nov-blue)}
+.novemberLogoText small{display:block;font-size:8px;letter-spacing:.15em;font-weight:500;color:#8299a5;margin-top:5px}
+.novemberDesktopNav{display:flex;align-items:center;gap:23px}
+.novemberDesktopNav a{font-size:11px;text-decoration:none;color:#456171;font-weight:600}
+.novemberDesktopNav a:hover{color:var(--nov-blue)}
+.novemberDesktopNav .novemberWorkspace{border:1px solid #9bc3d7;padding:11px 15px;color:var(--nov-blue)}
+.novemberMobileNav{display:none;position:relative}
+.novemberMobileNav summary{width:42px;height:40px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:9px;border:1px solid var(--nov-line);cursor:pointer;list-style:none}
+.novemberMobileNav summary::-webkit-details-marker{display:none}
+.novemberMobileNav summary span{height:2px;background:var(--nov-deep);width:100%}
+.novemberMobileNav nav{position:absolute;right:0;top:48px;width:220px;display:flex;flex-direction:column;background:#fff;box-shadow:0 15px 35px #123b5625;border:1px solid var(--nov-line)}
+.novemberMobileNav nav a{padding:14px 17px;border-bottom:1px solid var(--nov-line);font-size:12px;text-decoration:none;color:var(--nov-deep)}
+.novemberMobileNav nav a:hover{background:var(--nov-ice)}
+.novemberHero{position:relative;min-height:620px;display:flex;align-items:center;background:#123b56;isolation:isolate}
+.novemberHeroImage,.novemberHeroShade{position:absolute;inset:0;z-index:-1}
+.novemberHeroImage{background-image:url("https://images.unsplash.com/photo-1437482078695-73f2ca6c96e2?auto=format&fit=crop&w=2000&q=90");background-size:cover;background-position:center 48%;filter:saturate(.78)}
+.novemberHeroShade{background:linear-gradient(90deg,#0d3654ed 0%,#174d6bc9 49%,#1c638a4d 100%)}
+.novemberHeroContent{max-width:1240px;width:100%;margin:0 auto;padding:105px 7.5% 125px;color:#fff}
+.novemberEyebrow{font-size:10px;letter-spacing:.22em;font-weight:700;color:#b5e2f4}
+.novemberHero h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(48px,6vw,78px);font-weight:400;line-height:1.08;letter-spacing:-.035em;margin:22px 0;max-width:760px}
+.novemberHero h1 em,.novemberIntro h2 em,.novemberSectionHeading h2 em,.novemberQuality h2 em,.novemberPartner h2 em,.novemberContact h2 em{font-weight:400;color:#a9dff3}
+.novemberHeroContent>p:not(.novemberEyebrow){font-size:15px;line-height:1.9;color:#e2f0f7;max-width:570px}
+.novemberHeroActions{display:flex;align-items:center;gap:27px;margin-top:35px}
+.novemberButton{display:inline-flex;align-items:center;gap:24px;padding:16px 22px;background:#65b4d7;color:#103c57;text-decoration:none;font-size:12px;font-weight:700}
+.novemberButton:hover{background:#fff;transform:translateY(-2px)}
+.novemberTextButton{color:#fff;text-decoration:none;font-size:12px}
+.novemberTextButton span{margin-left:10px;color:#9ed8ef}
+.novemberHeroIndex{position:absolute;bottom:28px;right:max(7.5%,calc((100% - 1240px)/2 + 34px));display:flex;align-items:center;gap:15px;color:#d5ebf5;font-size:9px;letter-spacing:.18em}
+.novemberHeroIndex strong{font-family:Georgia,serif;font-size:28px;font-weight:400;color:#fff}
+.novemberIntro,.novemberProducts,.novemberGallery,.novemberContact{max-width:1240px;margin:0 auto;padding:105px 6%}
+.novemberSectionNumber{font-size:10px;letter-spacing:.16em;font-weight:700;color:var(--nov-blue)}
+.novemberSectionNumber span{color:#78909d;margin-left:8px;font-weight:600}
+.novemberIntroGrid{display:grid;grid-template-columns:1fr .9fr;gap:12%;align-items:start;margin-top:28px}
+.novemberIntro h2,.novemberSectionHeading h2,.novemberQuality h2,.novemberPartner h2,.novemberContact h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(36px,4.4vw,54px);line-height:1.16;letter-spacing:-.025em;color:var(--nov-deep);margin:0}
+.novemberIntro h2 em,.novemberSectionHeading h2 em,.novemberContact h2 em{color:var(--nov-blue)}
+.novemberIntroGrid>div p{font-size:13px;line-height:1.95;color:#526d7c;margin:0 0 17px}
+.novemberMuted{font-size:11px!important;color:#8a9da7!important}
+.novemberInlineLink{display:inline-block;margin-top:12px;color:var(--nov-blue);font-size:12px;font-weight:700;text-decoration:none}
+.novemberInlineLink span{margin-left:9px}
+.novemberIntroRule{margin-top:65px;border-top:1px solid var(--nov-line);padding-top:17px;display:flex;justify-content:space-between;color:#8aa0ad;font-size:9px;letter-spacing:.16em}
+.novemberProducts{max-width:none;background:var(--nov-pale);padding-left:max(6%,calc((100% - 1090px)/2));padding-right:max(6%,calc((100% - 1090px)/2))}
+.novemberSectionHeading{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:40px}
+.novemberSectionHeading h2{margin-top:19px}
+.novemberSectionHeading>p{max-width:320px;color:var(--nov-muted);font-size:12px;line-height:1.9;margin:0 0 5px}
+.novemberProductGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.novemberProductCard{background:#fff;border:1px solid var(--nov-line);min-width:0;transition:transform .25s ease,box-shadow .25s ease}
+.novemberProductCard:hover{transform:translateY(-5px);box-shadow:0 18px 35px #1a55731a}
+.novemberProductVisual{height:235px;position:relative;overflow:hidden;background:linear-gradient(145deg,#e5f4fa,#c5e3f0);display:grid;place-items:center}
+.novemberProductCard:nth-child(2) .novemberProductVisual{background:linear-gradient(145deg,#d8edf7,#b2d8e9)}
+.novemberProductCard:nth-child(3) .novemberProductVisual{background:linear-gradient(145deg,#e7f2f8,#c8dfe9)}
+.novemberCardNumber{position:absolute;top:17px;left:18px;font-family:Georgia,serif;font-size:16px;color:#4d8eae}
+.novemberWaterShape{height:145px;width:78px;border:1px solid #ffffffd9;border-radius:18px 18px 25px 25px;background:linear-gradient(90deg,#ffffffaa,#ffffffef 48%,#9bcfe3aa);box-shadow:14px 22px 35px #2c78912b;position:relative}
+.novemberWaterShape:before{content:"";position:absolute;left:22px;top:-17px;width:32px;height:20px;border-radius:5px 5px 1px 1px;background:#e9f7fc;border:1px solid #fff}
+.novemberWaterShape:after{content:"";position:absolute;left:0;right:0;top:57px;height:34px;background:#4c9ec0;opacity:.8}
+.novemberWaterShape2{height:165px;width:105px;border-radius:23px 23px 17px 17px}
+.novemberWaterShape2:before{left:34px;width:35px}
+.novemberWaterShape3{height:130px;width:110px;border-radius:14px;background:linear-gradient(90deg,#d8eef7,#fff 50%,#a9d2e4)}
+.novemberWaterShape3:before{display:none}
+.novemberWaterShape3:after{top:48px}
+.novemberProductWord{position:absolute;bottom:15px;right:16px;font-size:8px;letter-spacing:.2em;color:#4d8299}
+.novemberProductBody{padding:23px 22px 25px}
+.novemberProductBody h3{font-family:Georgia,serif;font-weight:400;font-size:23px;color:var(--nov-deep);margin:0 0 12px}
+.novemberProductBody p{font-size:12px;line-height:1.8;color:#617b89;margin:0 0 15px}
+.novemberProductBody small{font-size:10px;line-height:1.6;color:#8ca0aa}
+.novemberGalleryGrid{display:grid;grid-template-columns:1.15fr .85fr .85fr;gap:17px}
+.novemberGalleryItem{margin:0;min-width:0}
+.novemberGalleryPhoto{height:260px;overflow:hidden;background:var(--nov-ice)}
+.novemberGalleryItem1 .novemberGalleryPhoto{height:330px}
+.novemberGalleryPhoto img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+.novemberGalleryItem:hover img{transform:scale(1.04)}
+.novemberGalleryItem figcaption{padding:16px 2px;display:flex;flex-direction:column;gap:8px}
+.novemberGalleryItem figcaption span{font-size:8px;letter-spacing:.17em;color:var(--nov-blue)}
+.novemberGalleryItem figcaption strong{font-family:Georgia,serif;font-weight:400;font-size:20px;color:var(--nov-deep)}
+.novemberGalleryItem figcaption small{font-size:10px;line-height:1.7;color:#8397a2}
+.novemberImageNote{font-size:10px;color:#899ba5;margin:16px 0 0}
+.novemberVideoBand{margin-top:45px;background:#eaf5fa;padding:34px;display:grid;grid-template-columns:1fr .85fr;gap:40px;align-items:center}
+.novemberVideoBand h3{font-family:Georgia,serif;font-weight:400;font-size:30px;color:var(--nov-deep);margin:12px 0}
+.novemberVideoBand p{font-size:12px;line-height:1.8;color:#647e8c;max-width:500px}
+.novemberVideoLinks{display:flex;flex-direction:column;gap:9px}
+.novemberVideoLinks a{background:#fff;padding:14px 16px;text-decoration:none;color:#357b9f;font-size:11px;border:1px solid #d5e7ef}
+.novemberVideoLinks a:hover{background:#d4ebf6}
+.novemberQuality{background:#123b56;color:#fff;display:grid;grid-template-columns:.85fr 1.15fr;min-height:540px}
+.novemberQualityPhoto{background:linear-gradient(180deg,#0e527045,#0c385c35),url("https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=1200&q=85") center/cover;min-height:420px}
+.novemberQualityContent{padding:85px max(7%,calc((100vw - 1200px)/2));padding-left:8%;padding-right:10%;align-self:center}
+.novemberQuality .novemberSectionNumber{color:#91d3ee}
+.novemberQuality .novemberSectionNumber span{color:#a5c1d0}
+.novemberQuality h2{color:#fff;margin:25px 0}
+.novemberQuality h2 em{color:#9bd9f0}
+.novemberQualityContent>p{font-size:12px;line-height:1.9;color:#d3e5ed}
+.novemberQualityPoints{display:flex;flex-direction:column;gap:12px;margin:27px 0}
+.novemberQualityPoints span{border-top:1px solid #ffffff2a;padding-top:12px;font-size:11px;color:#e2f0f5}
+.novemberQualityPoints b{font-size:10px;color:#80c6e3;margin-right:14px}
+.novemberQuality .novemberMuted{color:#9db9c7!important}
+.novemberPartner{background:#dff0f8;text-align:center;padding:95px 20px 105px}
+.novemberPartner .novemberSectionNumber{margin-bottom:25px}
+.novemberPartner h2{font-size:clamp(40px,5vw,60px)}
+.novemberPartner h2 em{color:var(--nov-blue)}
+.novemberPartner>p:not(.novemberSectionNumber){font-size:12px;color:#5f7d8d;margin:22px auto 30px;max-width:520px;line-height:1.8}
+.novemberButtonDark{background:var(--nov-deep);color:#fff}
+.novemberButtonDark:hover{background:var(--nov-blue)}
+.novemberContact{display:grid;grid-template-columns:.9fr 1.1fr;gap:10%;align-items:center}
+.novemberContact h2{margin:22px 0}
+.novemberContactIntro>p{font-size:12px;line-height:1.9;color:#637c8b;max-width:390px}
+.novemberContactIntro>a{display:inline-block;margin-top:15px;color:var(--nov-blue);font-size:12px;text-decoration:none}
+.novemberContactList{display:flex;flex-direction:column}
+.novemberContactList>a{display:grid;grid-template-columns:1fr auto;gap:8px 18px;padding:22px 0;border-bottom:1px solid var(--nov-line);text-decoration:none;color:var(--nov-deep)}
+.novemberContactList>a:first-child{border-top:1px solid var(--nov-line)}
+.novemberContactList span{font-size:8px;letter-spacing:.16em;color:#7f9aa8}
+.novemberContactList strong{grid-column:1;font-size:18px;font-weight:500}
+.novemberContactList small{grid-column:2;grid-row:1/3;align-self:center;color:var(--nov-blue);font-size:10px}
+.novemberContactList>a:hover strong{color:var(--nov-blue)}
+.novemberFooter{background:#102f46;color:#dceaf1;padding:38px max(6%,calc((100% - 1120px)/2));display:grid;grid-template-columns:auto 1fr auto;gap:15px 30px;align-items:center}
+.novemberFooter .novemberLogo{color:#fff}
+.novemberFooter .novemberLogoText small{color:#a5bdca}
+.novemberFooter p{font-size:10px;color:#b4cbd6;margin:0}
+.novemberFooter>small{grid-column:1/3;font-size:9px;color:#91aebb}
+.novemberFooter>a:last-child{grid-column:3;grid-row:1/3;color:#b9e0f0;font-size:10px;text-decoration:none}
+@media(max-width:1050px){.novemberDesktopNav{gap:13px}.novemberDesktopNav a{font-size:10px}.novemberHeaderInner{padding:0 24px}.novemberQualityContent{padding:65px 7%}.novemberContact{gap:6%}}
+@media(max-width:800px){.novemberDesktopNav{display:none}.novemberMobileNav{display:block}.novemberHeader{height:72px}.novemberHero{min-height:570px}.novemberHeroContent{padding:90px 7% 115px}.novemberIntro,.novemberProducts,.novemberGallery,.novemberContact{padding:78px 7%}.novemberIntroGrid{grid-template-columns:1fr;gap:25px}.novemberSectionHeading{display:block}.novemberSectionHeading>p{margin-top:18px}.novemberProductGrid{grid-template-columns:1fr 1fr}.novemberGalleryGrid{grid-template-columns:1fr 1fr}.novemberGalleryItem1{grid-column:span 2}.novemberGalleryItem1 .novemberGalleryPhoto{height:280px}.novemberQuality{grid-template-columns:1fr}.novemberQualityPhoto{min-height:300px}.novemberQualityContent{padding:65px 7%}.novemberContact{grid-template-columns:1fr;gap:35px}.novemberFooter{padding:35px 7%;grid-template-columns:1fr auto}.novemberFooter>small{grid-column:1/3}.novemberFooter>a:last-child{grid-column:2;grid-row:1}}
+@media(max-width:560px){.novemberHeaderInner{padding:0 18px}.novemberHero{min-height:540px}.novemberHeroContent{padding:75px 7% 110px}.novemberHero h1{font-size:48px}.novemberHeroContent>p:not(.novemberEyebrow){font-size:13px}.novemberHeroActions{align-items:flex-start;flex-direction:column;gap:18px}.novemberHeroIndex{right:7%;bottom:22px}.novemberIntro,.novemberProducts,.novemberGallery,.novemberContact{padding:65px 7%}.novemberIntro h2,.novemberSectionHeading h2,.novemberQuality h2,.novemberContact h2{font-size:39px}.novemberIntroRule{margin-top:40px;gap:12px;flex-direction:column}.novemberProductGrid,.novemberGalleryGrid{grid-template-columns:1fr}.novemberGalleryItem1{grid-column:auto}.novemberGalleryItem1 .novemberGalleryPhoto,.novemberGalleryPhoto{height:240px}.novemberVideoBand{padding:25px 20px;grid-template-columns:1fr;gap:20px}.novemberQualityPhoto{min-height:240px}.novemberQualityContent{padding:55px 7%}.novemberPartner{padding:75px 7%}.novemberPartner h2{font-size:43px}.novemberContactList strong{font-size:16px}.novemberFooter{grid-template-columns:1fr;gap:15px}.novemberFooter>small,.novemberFooter>a:last-child{grid-column:1;grid-row:auto}.novemberFooter .novemberLogo{width:max-content}}
+@media(prefers-reduced-motion:reduce){.novemberSite *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
