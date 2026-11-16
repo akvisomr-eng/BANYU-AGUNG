@@ -31,7 +31,7 @@ export default async function WorkspacePage() {
     <aside className="side">
       <Link className="brand" href="/">BANYU <span>AGUNG</span></Link>
       <p className="sideLabel">ENTERPRISE</p>
-      <Link className="sideActive" href="/workspace">◫ &nbsp; Ringkasan</Link>
+      <Link className="sideActive" href="/workspace">◫ &nbsp; Ringkasan</Link>\n      <Link className="sideLink" href="/workspace/products">Master Produk</Link>
       {modules.map(m=><a className="sideLink" href="#modul" key={m[0]}>{m[0]}</a>)}
       <Link className="sideLink" href="/">← Kembali ke Website</Link>
     </aside>
