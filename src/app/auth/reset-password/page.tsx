@@ -2,13 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const token = params.get("token") || "";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -16,6 +14,7 @@ export default function ResetPasswordPage() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError("");
+    const token = new URLSearchParams(window.location.search).get("token") || "";
     if (!token) { setError("Token pemulihan tidak ditemukan. Minta tautan reset yang baru."); return; }
     if (password.length < 8) { setError("Gunakan minimal 8 karakter."); return; }
     if (password !== confirm) { setError("Konfirmasi kata sandi belum sama."); return; }
