@@ -33,14 +33,19 @@ const contacts = [
 ];
 
 export default function Home() {
-  return <main>
-    <header className="topbar">
-      <Link className="brand" href="/">BANYU <span>AGUNG</span></Link>
-      <nav aria-label="Navigasi utama"><a href="#tentang">Tentang</a><a href="#produk">Produk</a><a href="#galeri">Galeri</a><a href="#mutu">Mutu & Proses</a><a href="#mitra">Kemitraan</a></nav>
-      <a className="navCta" href="#kontak">Hubungi Kami ↗</a>
-    </header>
+  return <div className="siteShell">
+    <aside className="sentraSidebar" aria-label="Navigasi BANYU AGUNG">
+      <Link className="sentraBrand" href="/"><span className="brandMark">BA</span><strong>BANYU <em>AGUNG</em></strong><small>Jolotundo · Mojokerto</small></Link>
+      <p className="sideCaption">JELAJAHI</p>
+      <nav className="sentraNav" aria-label="Navigasi utama">
+        <a href="#beranda"><span>01</span>Beranda</a><a href="#tentang"><span>02</span>Tentang Kami</a><a href="#produk"><span>03</span>Produk</a><a href="#galeri"><span>04</span>Galeri</a><a href="#mutu"><span>05</span>Mutu & Proses</a><a href="#mitra"><span>06</span>Kemitraan</a><a href="#kontak"><span>07</span>Kontak</a>
+      </nav>
+      <div className="sidebarBottom"><a className="sidebarCta" href="#kontak">Hubungi Kami <span>↗</span></a><small>QUALITY · CARE · TRUST</small><Link href="/workspace" className="workspaceShortcut">Akses Workspace →</Link></div>
+    </aside>
+    <div className="mobileBar"><Link className="brand" href="/">BANYU <span>AGUNG</span></Link><details className="mobileMenu"><summary>MENU <span>☰</span></summary><nav><a href="#beranda">Beranda</a><a href="#tentang">Tentang</a><a href="#produk">Produk</a><a href="#galeri">Galeri</a><a href="#mutu">Mutu & Proses</a><a href="#mitra">Kemitraan</a><a href="#kontak">Kontak</a></nav></details></div>
+    <main className="siteMain">
 
-    <section className="hero">
+    <section id="beranda" className="hero">
       <div className="heroCopy">
         <p className="eyebrow">AIR KEMASAN • JOLOTUNDO • MOJOKERTO</p>
         <h1>Berawal dari alam.<br /><em>Hadir untuk kehidupan.</em></h1>
@@ -84,5 +89,6 @@ export default function Home() {
 
     <section id="kontak" className="contact section"><p className="eyebrow">06 / KONTAK RESMI</p><h2>Hubungi tim BANYU AGUNG</h2><p className="contactIntro">Untuk informasi produk, pemesanan, kemitraan, dan layanan pelanggan.</p><div className="contactGrid">{contacts.map(c=><a className="contactItem" href={c.href} target="_blank" rel="noreferrer" key={c.phone}><span>WhatsApp</span><strong>{c.phone}</strong><small>Mulai percakapan ↗</small></a>)}</div><a className="contactEmail" href="mailto:akvisomr@gmail.com">akvisomr@gmail.com</a></section>
     <footer><Link className="brand" href="/">BANYU <span>AGUNG</span></Link><p>Air Kemasan Jolotundo · Mojokerto, Jawa Timur</p><small>© {new Date().getFullYear()} BANYU AGUNG. Informasi perusahaan dan produk akan diperbarui setelah verifikasi data resmi.</small></footer>
-  </main>;
+    </main>
+  </div>;
 }

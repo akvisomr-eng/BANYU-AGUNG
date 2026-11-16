@@ -23,3 +23,49 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .workspace{min-height:100vh;display:grid;grid-template-columns:250px 1fr;background:#f3f6f2}.side{background:#102f38;color:#e4eee9;padding:30px 20px;display:flex;flex-direction:column;gap:8px}.side .brand{color:#fff;font-size:16px;margin-bottom:28px}.sideLabel{font-size:9px;letter-spacing:.2em;color:#80aaa0;margin:12px}.sideLink,.sideActive{color:#c4d8d1;text-decoration:none;font-size:12px;padding:11px 12px;border-radius:4px}.sideActive{background:#24545a;color:white}.sideLink:hover{background:#1c444c}.workMain{padding:48px 5vw;max-width:1500px;width:100%;margin:auto}.workHeader{display:flex;justify-content:space-between;align-items:center}.workHeader h1{font-size:38px;margin:12px 0}.demoTag{font-size:9px;letter-spacing:.14em;background:#fff0d8;color:#815d1b;padding:10px 13px;border-radius:3px}.notice{margin:30px 0;padding:16px 18px;background:#fff4df;border-left:3px solid #c18c37;color:#735a2a;font-size:12px;line-height:1.7}.metricGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:25px 0 45px}.metric{background:white;border:1px solid #e1e9e2;padding:22px}.metric span,.metric small{display:block;color:#72858a;font-size:11px}.metric strong{display:block;font-size:30px;margin:16px 0;font-family:"Playfair Display",serif}.workMain h2{font-family:"Playfair Display",serif;font-weight:500;font-size:27px}.moduleGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.moduleCard{background:white;border:1px solid #e1e9e2;padding:20px;text-decoration:none;color:#183b43;display:flex;flex-direction:column;gap:10px;min-height:140px}.moduleIcon{color:#267b77;font-size:22px}.moduleCard strong{font-size:13px}.moduleCard small{color:#73868a;font-size:11px}.moduleOpen{font-size:10px;color:#277b76;margin-top:auto}.workspaceFoot{margin-top:34px;color:#82928e;font-size:11px}
 .authPage{min-height:100vh;display:grid;place-items:center;padding:32px 18px;background:radial-gradient(ellipse at 80% 20%,#d9ece4 0,#f5f6f0 55%,#e8f0e9 100%)}.authCard{width:min(100%,460px);background:#fff;padding:42px 40px;border:1px solid #dce5df;box-shadow:0 24px 70px #244f4720}.authBrand{display:inline-block;color:#102c35;text-decoration:none;font-weight:700;letter-spacing:.16em;font-size:18px;margin-bottom:38px}.authBrand span{color:#176b70}.authCard h1{font-size:38px;margin:12px 0}.authIntro{color:#60747a;font-size:13px;line-height:1.8;margin-bottom:28px}.authForm{display:flex;flex-direction:column;gap:10px}.authForm label{font-size:12px;font-weight:600;color:#29464b;margin-top:8px}.authForm input{width:100%;border:1px solid #cbd9d3;background:#fbfcfa;padding:14px 13px;font:inherit;font-size:13px;color:#102c35;border-radius:2px}.authForm input:focus{outline:2px solid #8abbb0;outline-offset:1px}.authSubmit{width:100%;border:0;cursor:pointer;margin-top:12px;font:inherit}.authSubmit:disabled{opacity:.6;cursor:wait}.authHelp{display:inline-block;color:#176b70;font-size:12px;margin-top:20px;text-decoration:none}.authFoot{font-size:11px;line-height:1.7;color:#82928e;border-top:1px solid #e5ece7;padding-top:18px;margin-top:26px}.authError{background:#fff0ed;color:#a33f32;padding:11px;font-size:12px}.authSuccess{background:#e9f5ee;color:#236849;padding:11px;font-size:12px}.signOutButton{border:1px solid #b7cbc2;background:#fff;color:#23454a;padding:11px 18px;font:inherit;font-size:12px;cursor:pointer}.metricText{font-size:18px!important}.moduleDisabled{cursor:default}.moduleDisabled .moduleOpen{color:#82928e}
 @media(max-width:900px){.workspace{grid-template-columns:1fr}.side{display:none}.metricGrid{grid-template-columns:repeat(2,1fr)}.moduleGrid{grid-template-columns:repeat(2,1fr)}.workMain{padding:30px 5vw}}@media(max-width:520px){.moduleGrid{grid-template-columns:1fr}.workHeader{align-items:flex-start;gap:12px;flex-direction:column}.authCard{padding:30px 24px}}
+
+/* Sentra-inspired public-site shell: fixed navigation, spacious editorial canvas */
+.siteShell{min-height:100vh;background:#f5f6f0}
+.sentraSidebar{position:fixed;inset:0 auto 0 0;width:258px;z-index:40;padding:34px 27px 26px;background:#112f38;color:#e7f0eb;display:flex;flex-direction:column;box-shadow:8px 0 35px #0b293012}
+.sentraBrand{display:grid;grid-template-columns:48px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:12px;text-decoration:none;color:#fff;padding-bottom:35px;border-bottom:1px solid #ffffff20}
+.brandMark{grid-row:span 2;width:48px;height:48px;border:1px solid #8db7a9;border-radius:50%;display:grid;place-items:center;color:#b9dfce;font-family:"Playfair Display",serif;font-size:22px}
+.sentraBrand strong{font-size:14px;letter-spacing:.15em;align-self:end}.sentraBrand strong em{font-style:normal;color:#8fc5b3}.sentraBrand small{font-size:9px;color:#9bb7ae;letter-spacing:.08em;margin-top:5px}
+.sideCaption{font-size:9px;letter-spacing:.22em;color:#83b4a5;margin:34px 0 14px}
+.sentraNav{display:flex;flex-direction:column;gap:5px}
+.sentraNav a{display:flex;align-items:center;gap:15px;padding:13px 11px;color:#c1d5ce;text-decoration:none;font-size:12px;border-left:2px solid transparent;transition:background .2s ease,color .2s ease,border-color .2s ease}
+.sentraNav a span{font-size:9px;color:#72978c;letter-spacing:.08em}
+.sentraNav a:hover,.sentraNav a:focus-visible{background:#ffffff10;color:#fff;border-left-color:#91c9b5;outline:none}
+.sidebarBottom{margin-top:auto;display:flex;flex-direction:column;gap:16px}
+.sidebarCta{display:flex;justify-content:space-between;align-items:center;padding:14px 15px;background:#2b706c;color:#fff;text-decoration:none;font-size:11px;transition:background .2s ease}
+.sidebarCta:hover{background:#39877e}.sidebarBottom>small{font-size:8px;letter-spacing:.16em;color:#82a89d}
+.workspaceShortcut{color:#b7d4ca;font-size:10px;text-decoration:none}.workspaceShortcut:hover{color:#fff}
+.siteMain{margin-left:258px;min-width:0;overflow:hidden}
+.mobileBar{display:none}
+.siteMain .hero{min-height:calc(100vh - 25px);padding:70px 7vw 58px}
+.siteMain .heroVisual{min-height:530px}
+.siteMain .section{padding-left:8vw;padding-right:8vw}
+.siteMain footer{padding-left:8vw;padding-right:8vw}
+.siteMain .intro{min-height:410px}
+.siteMain .productCard,.siteMain .galleryCard,.siteMain .qualityPanel{transition:transform .28s ease,box-shadow .28s ease}
+.siteMain .productCard:hover{transform:translateY(-5px);box-shadow:0 18px 38px #173c3212}
+.siteMain .galleryCard{overflow:hidden}.siteMain .galleryCard img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}.siteMain .galleryCard:hover img{transform:scale(1.045)}
+.siteMain section[id]{scroll-margin-top:22px}
+@media(max-width:1100px) and (min-width:901px){.sentraSidebar{width:225px;padding-left:22px;padding-right:22px}.siteMain{margin-left:225px}.siteMain .hero{padding-left:5vw;padding-right:5vw}.siteMain .section{padding-left:6vw;padding-right:6vw}}
+@media(max-width:900px){
+ .sentraSidebar{display:none}.siteMain{margin-left:0}
+ .mobileBar{height:68px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 6vw;background:#112f38;border-bottom:1px solid #ffffff18}
+ .mobileBar .brand{color:#fff;font-size:16px}.mobileBar .brand span{color:#8fc5b3}
+ .mobileMenu{position:relative;color:#fff;font-size:10px;letter-spacing:.14em}
+ .mobileMenu summary{list-style:none;cursor:pointer;padding:12px 14px;border:1px solid #71998d}.mobileMenu summary::-webkit-details-marker{display:none}.mobileMenu summary span{margin-left:10px;font-size:14px}
+ .mobileMenu nav{position:absolute;right:0;top:43px;width:210px;display:flex;flex-direction:column;gap:0;background:#173c44;box-shadow:0 15px 30px #102c3533}
+ .mobileMenu nav a{padding:13px 16px;color:#e7f0eb;text-decoration:none;border-bottom:1px solid #ffffff12;font-size:12px}
+ .siteMain .hero{min-height:auto;padding:65px 7vw 55px}
+ .siteMain .heroVisual{min-height:400px}
+}
+@media(max-width:650px){
+ .siteMain .hero{padding:48px 7vw 45px}
+ .siteMain .heroVisual{min-height:320px}
+ .siteMain .section{padding:64px 7vw}
+ .siteMain footer{padding:38px 7vw}
+}
+@media(prefers-reduced-motion:reduce){.siteMain *, .sentraSidebar *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
