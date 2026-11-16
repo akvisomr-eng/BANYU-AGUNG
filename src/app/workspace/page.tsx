@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { sql } from "@/lib/db";
@@ -28,11 +29,11 @@ export default async function WorkspacePage() {
 
   return <main className="workspace">
     <aside className="side">
-      <a className="brand" href="/">BANYU <span>AGUNG</span></a>
+      <Link className="brand" href="/">BANYU <span>AGUNG</span></Link>
       <p className="sideLabel">ENTERPRISE</p>
-      <a className="sideActive" href="/workspace">◫ &nbsp; Ringkasan</a>
+      <Link className="sideActive" href="/workspace">◫ &nbsp; Ringkasan</Link>
       {modules.map(m=><a className="sideLink" href="#modul" key={m[0]}>{m[0]}</a>)}
-      <a className="sideLink" href="/">← Kembali ke Website</a>
+      <Link className="sideLink" href="/">← Kembali ke Website</Link>
     </aside>
     <section className="workMain">
       <header className="workHeader">
