@@ -12,7 +12,7 @@ type Product={id:string;sku:string;name:string;unit_code:string|null};
 type PurchaseOrder={id:string;site_id:string;po_number:string;order_date:string;expected_date:string|null;status:string;total_amount:string|number;supplier_name:string;site_name:string};
 type Warehouse={id:string;site_id:string;code:string;name:string};
 
-export default async function PurchaseOrdersPage({searchParams}:{searchParams:Promise<{created?:string;error?:string}>}) {
+export default async function PurchaseOrdersPage({searchParams}:{searchParams:Promise<{created?:string;approved?:string;error?:string}>}) {
   const {data:session}=await auth.getSession();
   if(!session?.user) redirect("/auth/sign-in");
   const {sql}=await import("@/lib/db");
