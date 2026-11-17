@@ -2,16 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "../sign-out-button";
-import { createPurchaseOrder } from "./actions";
+import { approvePurchaseOrder, createPurchaseOrder } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 type Supplier={id:string;supplier_code:string;name:string};
 type Site={id:string;code:string;name:string};
 type Product={id:string;sku:string;name:string;unit_code:string|null};
-type PurchaseOrder={po_number:string;order_date:string;expected_date:string|null;status:string;total_amount:string|number;supplier_name:string;site_name:string};
+type PurchaseOrder={id:string;site_id:string;po_number:string;order_date:string;expected_date:string|null;status:string;total_amount:string|number;supplier_name:string;site_name:string};
+type Warehouse={id:string;site_id:string;code:string;name:string};
 
-export default async function PurchaseOrdersPage({searchParams}:{searchParams:Promise<{created?:string;error?:string}>}) {
+export default async function PurchaseOrdersPage({searchParams}:{searchParams:Promise<{created?:string;approved?:string;error?:string}>}) {
   const {data:session}=await auth.getSession();
   if(!session?.user) redirect("/auth/sign-in");
   const {sql}=await import("@/lib/db");
@@ -28,14 +29,15 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
   const products=await sql`
     SELECT p.id,p.sku,p.name,u.code AS unit_code FROM products p
     LEFT JOIN units_of_measure u ON u.id=p.base_unit_id
-    WHERE p.organization_id=${actor.organization_id}::uuid AND p.is_active=true AND p.is_purchasable=true ORDER BY p.name
+    WHERE p.organization_id=${actor.organization_id}::uuid AND p.is_active=true AND p.is_purchasable=true AND p.product_type<>'service' ORDER BY p.name
   ` as Product[];
   const orders=await sql`
-    SELECT po.po_number,po.order_date,po.expected_date,po.status,po.total_amount,sup.name AS supplier_name,site.name AS site_name
+    SELECT po.id,po.site_id,po.po_number,po.order_date,po.expected_date,po.status,po.total_amount,sup.name AS supplier_name,site.name AS site_name
     FROM purchase_orders po JOIN suppliers sup ON sup.id=po.supplier_id JOIN sites site ON site.id=po.site_id
     WHERE po.organization_id=${actor.organization_id}::uuid ORDER BY po.created_at DESC LIMIT 100
   `;
   const typedOrders = orders as PurchaseOrder[];
+  const warehouses = await sql`SELECT id,site_id,code,name FROM warehouses WHERE organization_id=${actor.organization_id}::uuid AND is_active=true ORDER BY name` as Warehouse[];
   const params=await searchParams;
   const ready=suppliers.length>0&&sites.length>0&&products.length>0;
 
@@ -49,11 +51,13 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
         <Link className="sideLink" href="/workspace/suppliers">Master Pemasok</Link>
         <Link className="sideLink" href="/workspace/products">Produk & Barang</Link>
         <Link className="sideLink" href="/workspace/setup">Konfigurasi Operasional</Link>
+        <Link className="sideLink" href="/workspace/goods-receipts">Goods Receipts</Link>
+        <Link className="sideLink" href="/workspace/inventory">Inventory</Link>
         <Link className="sideLink" href="/">Kembali ke Website</Link>
       </aside>
       <section className="workMain">
         <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / PROCUREMENT</p><h1>Purchase Orders</h1><p className="muted">Pencatatan pesanan pembelian dalam status draft · {actor.role_name}</p></div><SignOutButton /></header>
-        {params.created==="1" && <p className="authSuccess" role="status">Purchase order draft berhasil dibuat. Stok belum bertambah sampai penerimaan barang dicatat.</p>}
+        {params.created==="1" && <p className="authSuccess" role="status">Purchase order draft berhasil dibuat. Stok belum bertambah sampai penerimaan barang dicatat.</p>}{params.approved==="1" && <p className="authSuccess" role="status">Purchase order disetujui OWNER. Proses penerimaan barang kini dapat dilakukan.</p>}{params.error==="approval" && <p className="authError" role="alert">Persetujuan gagal. Hanya OWNER yang dapat menyetujui purchase order berstatus draft.</p>}
         {params.error && <p className="authError" role="alert">{params.error==="invalid" ? "Periksa pemasok, lokasi, tanggal, dan rincian pembelian." : params.error==="master" ? "Pemasok, lokasi, atau produk tidak aktif/tidak cocok dengan organisasi." : "Purchase order tidak dapat disimpan. Periksa kembali data dan coba lagi."}</p>}
         <div className="metricGrid">
           <article className="metric"><span>Total purchase order</span><strong>{typedOrders.length}</strong><small>Maksimal 100 terbaru</small></article>
@@ -86,7 +90,7 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
         </section>
         <h2>Daftar purchase order</h2>
         {typedOrders.length===0 ? <article className="moduleCard"><strong>Belum ada purchase order</strong><small>PO pertama akan muncul setelah master data dan penawaran pemasok tersedia.</small></article> :
-          <div className="orderList">{typedOrders.map((o)=><article className="orderItem" key={o.po_number}><div><span className="inquiryType">{o.po_number} · {o.status}</span><h3>{o.supplier_name}</h3><small>{o.site_name} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.order_date))}{o.expected_date ? ` · Tiba ${new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.expected_date))}` : ""}</small></div><strong>{Number(o.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong></article>)}</div>
+          <div className="orderList">{typedOrders.map((o)=><article className="orderItem orderItemStack" key={o.po_number}><div><span className="inquiryType">{o.po_number} · {o.status}</span><h3>{o.supplier_name}</h3><small>{o.site_name} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.order_date))}{o.expected_date ? ` · Tiba ${new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.expected_date))}` : ""}</small></div><strong>{Number(o.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong><div className="orderActions">{o.status==="draft" && <form action={approvePurchaseOrder}><input type="hidden" name="purchase_order_id" value={o.id}/><button className="primary" type="submit">Setujui (OWNER)</button></form>}{["approved","partially_received"].includes(o.status) && warehouses.filter(w=>w.site_id===o.site_id).map(w=><Link className="orderActionLink" key={w.id} href={`/workspace/goods-receipts/new?po_id=${o.id}&warehouse_id=${w.id}`}>Terima di {w.name} ↗</Link>)}</div></article>)}</div>
         }
         <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Stok bertambah hanya melalui proses penerimaan barang.</p>
       </section>

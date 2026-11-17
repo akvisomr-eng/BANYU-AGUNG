@@ -331,3 +331,29 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .supplierCreatePanel{margin-bottom:28px}
 .supplierForm{max-width:760px}
 @media(max-width:700px){.orderNumbers{grid-template-columns:repeat(2,minmax(0,1fr))}.orderItem{align-items:flex-start;flex-direction:column;gap:8px}.orderItem>strong{white-space:normal}}
+
+
+/* Goods receipt and inventory ledger */
+.receiptForm{max-width:900px}
+.receiptLine{border:1px solid #e1e9e2;background:#fbfcfa;padding:17px;margin:14px 0}
+.receiptLineTitle strong{display:block;color:#183f49;font-size:13px}
+.receiptLineTitle small{display:block;color:#82928e;font-size:10px;margin-top:4px}
+.receiptFacts{display:flex;flex-wrap:wrap;gap:8px 18px;padding:12px 0;color:#60747a;font-size:10px}
+.receiptFacts b{color:#176b70}
+.receiptFields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.receiptFields label{font-size:10px;color:#71858a}
+.receiptFields input{display:block;width:100%;min-width:0;margin-top:5px;padding:11px 8px;border:1px solid #cbd9d3;background:#fff;color:#102c35;font:inherit;font-size:11px}
+.receiptHint{display:block;color:#805d20;font-size:10px;margin-top:10px}
+.inventoryNotice{margin:18px 0;padding:14px 16px;border-left:3px solid #c39a54;background:#fbf6e9;color:#72582c;font-size:11px;line-height:1.7}
+.inventoryTableWrap{overflow-x:auto;background:#fff;border:1px solid #e1e9e2}
+.inventoryTable{width:100%;border-collapse:collapse;min-width:760px;font-size:11px}
+.inventoryTable th,.inventoryTable td{padding:13px 12px;border-bottom:1px solid #e8eeea;text-align:left;vertical-align:top}
+.inventoryTable th{background:#f5f8f5;color:#60747a;font-size:9px;text-transform:uppercase;letter-spacing:.06em}
+.inventoryTable td{color:#23454d}
+.inventoryTable td small{display:block;color:#82928e;font-size:10px;margin-top:4px}
+.orderItemStack{flex-wrap:wrap}
+.orderActions{display:flex;flex-wrap:wrap;gap:8px;width:100%;padding-top:12px;border-top:1px solid #e6ece8}
+.orderActions form{margin:0}
+.orderActions button{border:0;padding:9px 13px;font:inherit;font-size:10px;cursor:pointer}
+.orderActionLink{padding:9px 12px;background:#e8f4f9;color:#174b68;text-decoration:none;font-size:10px;font-weight:700}
+@media(max-width:700px){.receiptFields{grid-template-columns:repeat(2,minmax(0,1fr))}.receiptLine{padding:13px}.receiptFacts{gap:7px 12px}}
