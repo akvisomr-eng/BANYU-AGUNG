@@ -2,26 +2,26 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "../sign-out-button";
-import { createSalesOrder } from "./actions";
+import { approveSalesOrder, createSalesOrder } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 type Customer = { id:string; name:string; customer_code:string };
 type Site = { id:string; name:string; code:string };
 type Product = { id:string; name:string; sku:string; unit_code:string|null };
-type SalesOrder = { order_number:string; order_date:string; status:string; total_amount:string|number; customer_name:string; site_name:string };
+type SalesOrder = { id:string; order_number:string; order_date:string; status:string; total_amount:string|number; customer_name:string; site_name:string };
 
-export default async function SalesOrdersPage({ searchParams }: { searchParams: Promise<{created?:string;error?:string}> }) {
+export default async function SalesOrdersPage({ searchParams }: { searchParams: Promise<{created?:string;approved?:string;error?:string}> }) {
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
   const { sql } = await import("@/lib/db");
   const actors = await sql`
-    SELECT p.organization_id,r.name AS role_name FROM user_profiles p
+    SELECT p.organization_id,r.name AS role_name,r.code AS role_code FROM user_profiles p
     JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id
     WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code IN ('OWNER','ADMIN')
     ORDER BY r.code LIMIT 1
   `;
-  const actor = actors[0] as {organization_id:string;role_name:string}|undefined;
+  const actor = actors[0] as {organization_id:string;role_name:string;role_code:string}|undefined;
   if (!actor) redirect("/workspace?access=denied");
   const customers = await sql`SELECT id,name,customer_code FROM customers WHERE organization_id=${actor.organization_id}::uuid AND status='active' ORDER BY name` as Customer[];
   const sites = await sql`SELECT id,name,code FROM sites WHERE organization_id=${actor.organization_id}::uuid AND is_active=true ORDER BY name` as Site[];
@@ -31,7 +31,7 @@ export default async function SalesOrdersPage({ searchParams }: { searchParams: 
     WHERE p.organization_id=${actor.organization_id}::uuid AND p.is_active=true AND p.is_sellable=true ORDER BY p.name
   ` as Product[];
   const orders = await sql`
-    SELECT so.order_number,so.order_date,so.status,so.total_amount,c.name AS customer_name,s.name AS site_name
+    SELECT so.id,so.order_number,so.order_date,so.status,so.total_amount,c.name AS customer_name,s.name AS site_name
     FROM sales_orders so JOIN customers c ON c.id=so.customer_id JOIN sites s ON s.id=so.site_id
     WHERE so.organization_id=${actor.organization_id}::uuid ORDER BY so.created_at DESC LIMIT 100
   `;
@@ -49,11 +49,13 @@ export default async function SalesOrdersPage({ searchParams }: { searchParams: 
         <Link className="sideLink" href="/workspace/customers">Master Pelanggan</Link>
         <Link className="sideLink" href="/workspace/products">Produk & Barang</Link>
         <Link className="sideLink" href="/workspace/setup">Konfigurasi Operasional</Link>
+        <Link className="sideLink" href="/workspace/quality">Quality Control</Link>
+        <Link className="sideLink" href="/workspace/inventory">Inventory</Link>
         <Link className="sideLink" href="/">Kembali ke Website</Link>
       </aside>
       <section className="workMain">
         <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / SALES</p><h1>Sales Orders</h1><p className="muted">Pencatatan pesanan pelanggan dalam status draft · {actor.role_name}</p></div><SignOutButton /></header>
-        {params.created==="1" && <p className="authSuccess" role="status">Sales order draft berhasil dibuat. Belum ada stok yang dialokasikan atau pengiriman yang dijadwalkan.</p>}
+        {params.created==="1" && <p className="authSuccess" role="status">Sales order draft berhasil dibuat. Belum ada stok yang dialokasikan atau pengiriman yang dijadwalkan.</p>}{params.approved==="1" && <p className="authSuccess" role="status">Sales order disetujui dan stok lot lulus QC berhasil direservasi dengan metode FEFO.</p>}{params.error==="stock" && <p className="authError" role="alert">Persetujuan ditolak: stok lot lulus QC di lokasi tersebut tidak mencukupi. Tidak ada reservasi parsial yang dibuat.</p>}
         {params.error && <p className="authError" role="alert">{params.error==="invalid" ? "Periksa pelanggan, lokasi, tanggal, dan rincian pesanan." : params.error==="master" ? "Pelanggan, lokasi, atau produk tidak aktif/tidak cocok dengan organisasi." : "Sales order tidak dapat disimpan. Periksa kembali data dan coba lagi."}</p>}
         <div className="metricGrid">
           <article className="metric"><span>Total pesanan</span><strong>{typedOrders.length}</strong><small>Maksimal 100 terbaru</small></article>
@@ -88,9 +90,9 @@ export default async function SalesOrdersPage({ searchParams }: { searchParams: 
         </section>
         <h2>Daftar sales order</h2>
         {typedOrders.length===0 ? <article className="moduleCard"><strong>Belum ada pesanan</strong><small>Pesanan pertama akan muncul setelah master data dan harga disepakati.</small></article> :
-          <div className="orderList">{typedOrders.map((o)=><article className="orderItem" key={o.order_number}><div><span className="inquiryType">{o.order_number} · {o.status}</span><h3>{o.customer_name}</h3><small>{o.site_name} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.order_date))}</small></div><strong>{Number(o.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong></article>)}</div>
+          <div className="orderList">{typedOrders.map((o)=><article className="orderItem orderItemStack" key={o.order_number}><div><span className="inquiryType">{o.order_number} · {o.status}</span><h3>{o.customer_name}</h3><small>{o.site_name} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.order_date))}</small></div><strong>{Number(o.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong>{actor.role_code==="OWNER" && o.status==="draft" && <form action={approveSalesOrder} className="orderActions"><input type="hidden" name="sales_order_id" value={o.id}/><button className="primary" type="submit">Setujui & reservasi stok (OWNER)</button></form>}</article>)}</div>
         }
-        <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Draft belum mengubah stok atau jurnal keuangan.</p>
+        <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Draft belum mengubah stok atau jurnal keuangan. Persetujuan OWNER hanya berhasil jika stok lot lulus QC mencukupi.</p>
       </section>
     </main>
   );

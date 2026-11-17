@@ -107,3 +107,99 @@ export async function createSalesOrder(formData: FormData) {
   }
   redirect("/workspace/sales-orders?created=1");
 }
+
+
+export async function approveSalesOrder(formData: FormData) {
+  const id=String(formData.get("sales_order_id")??"");
+  if(!/^[0-9a-f-]{36}$/i.test(id)) redirect("/workspace/sales-orders?error=approval");
+  const {data:session}=await auth.getSession();
+  if(!session?.user) redirect("/auth/sign-in");
+  const {sql}=await import("@/lib/db");
+  const rows=await sql`
+    WITH actor AS (
+      SELECT p.id AS actor_id,p.organization_id
+      FROM user_profiles p JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id
+      WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code='OWNER'
+      LIMIT 1
+    ),
+    order_context AS (
+      SELECT so.id,so.organization_id,so.site_id,so.order_number,actor.actor_id
+      FROM sales_orders so JOIN actor ON actor.organization_id=so.organization_id
+      WHERE so.id=${id}::uuid AND so.status='draft'
+    ),
+    requested AS (
+      SELECT soi.id AS sales_order_item_id,soi.product_id,soi.quantity
+      FROM sales_order_items soi JOIN order_context oc ON oc.id=soi.sales_order_id
+    ),
+    locked_balances AS (
+      SELECT ib.id AS balance_id,ib.organization_id,ib.warehouse_id,ib.product_id,ib.lot_id,
+        ib.quantity_on_hand-ib.quantity_reserved AS available,l.expires_at,l.received_at
+      FROM inventory_balances ib
+      JOIN inventory_lots l ON l.id=ib.lot_id AND l.quality_status='released'
+      JOIN warehouses w ON w.id=ib.warehouse_id
+      JOIN order_context oc ON oc.organization_id=ib.organization_id AND oc.site_id=w.site_id
+      WHERE ib.quantity_on_hand>ib.quantity_reserved
+        AND (l.expires_at IS NULL OR l.expires_at>=current_date)
+      FOR UPDATE OF ib
+    ),
+    allocation_candidates AS (
+      SELECT r.sales_order_item_id,r.product_id,r.quantity AS requested_quantity,
+        lb.balance_id,lb.warehouse_id,lb.lot_id,lb.available,
+        GREATEST(0,LEAST(lb.available,r.quantity-COALESCE(
+          SUM(lb.available) OVER (
+            PARTITION BY r.sales_order_item_id
+            ORDER BY lb.expires_at NULLS LAST,lb.received_at NULLS LAST,lb.balance_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+          ),0
+        ))) AS allocation_quantity
+      FROM requested r JOIN locked_balances lb ON lb.product_id=r.product_id
+    ),
+    allocated_totals AS (
+      SELECT sales_order_item_id,sum(allocation_quantity) AS allocated_quantity
+      FROM allocation_candidates GROUP BY sales_order_item_id
+    ),
+    ready AS (
+      SELECT count(*) AS item_count,
+        NOT EXISTS (
+          SELECT 1 FROM requested r
+          LEFT JOIN allocated_totals t ON t.sales_order_item_id=r.sales_order_item_id
+          WHERE COALESCE(t.allocated_quantity,0)<r.quantity
+        ) AS enough
+      FROM requested
+    ),
+    approved AS (
+      UPDATE sales_orders so
+      SET status='approved',approved_by=oc.actor_id
+      FROM order_context oc CROSS JOIN ready
+      WHERE so.id=oc.id AND ready.item_count>0 AND ready.enough=true
+      RETURNING so.id,so.organization_id,so.order_number,so.approved_by
+    ),
+    allocations AS (
+      INSERT INTO sales_order_allocations (
+        organization_id,sales_order_id,sales_order_item_id,inventory_balance_id,
+        warehouse_id,product_id,lot_id,quantity_reserved
+      )
+      SELECT a.organization_id,a.id,c.sales_order_item_id,c.balance_id,c.warehouse_id,
+        c.product_id,c.lot_id,c.allocation_quantity
+      FROM approved a CROSS JOIN allocation_candidates c
+      WHERE c.allocation_quantity>0
+      RETURNING id
+    ),
+    reserved AS (
+      UPDATE inventory_balances ib
+      SET quantity_reserved=ib.quantity_reserved+c.allocation_quantity,updated_at=now()
+      FROM allocation_candidates c CROSS JOIN approved a
+      WHERE ib.id=c.balance_id AND c.allocation_quantity>0
+      RETURNING ib.id
+    ),
+    logged AS (
+      INSERT INTO audit_logs (organization_id,actor_user_id,action,entity_type,entity_id,after_data)
+      SELECT organization_id,approved_by,'APPROVE_AND_RESERVE','sales_order',id::text,
+        jsonb_build_object('order_number',order_number,'reservation_count',(SELECT count(*) FROM allocations))
+      FROM approved RETURNING id
+    )
+    SELECT order_number FROM approved
+  `;
+  if(rows.length===0) redirect("/workspace/sales-orders?error=stock");
+  redirect("/workspace/sales-orders?approved=1");
+}

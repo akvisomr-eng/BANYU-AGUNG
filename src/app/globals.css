@@ -357,3 +357,15 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .orderActions button{border:0;padding:9px 13px;font:inherit;font-size:10px;cursor:pointer}
 .orderActionLink{padding:9px 12px;background:#e8f4f9;color:#174b68;text-decoration:none;font-size:10px;font-weight:700}
 @media(max-width:700px){.receiptFields{grid-template-columns:repeat(2,minmax(0,1fr))}.receiptLine{padding:13px}.receiptFacts{gap:7px 12px}}
+
+
+/* Quality control lot inspection */
+.qualityList{display:grid;gap:14px;margin:16px 0 28px}
+.qualityItem{background:#fff;border:1px solid #e1e9e2;padding:18px}
+.qualityItemHead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:13px;border-bottom:1px solid #e8eeea}
+.qualityItemHead h3{font-family:"Playfair Display",serif;font-size:18px;font-weight:500;margin:6px 0}
+.qualityItemHead small{color:#82928e;font-size:10px}
+.qualityForm{max-width:760px;margin-top:14px}
+.qualityForm select{width:100%;padding:12px;border:1px solid #cbd9d3;background:#fbfcfa;color:#102c35;font:inherit;font-size:12px}
+.qualityForm textarea{width:100%;padding:12px;border:1px solid #cbd9d3;background:#fbfcfa;color:#102c35;font:inherit;font-size:12px;resize:vertical}
+@media(max-width:700px){.qualityItemHead{flex-direction:column}}
