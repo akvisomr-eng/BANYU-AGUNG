@@ -152,11 +152,11 @@ export default function Home() {
           <div className="novemberSectionNumber">05 <span>/ KEMITRAAN</span></div>
           <h2>Tumbuh bersama dalam<br /><em>jaringan distribusi.</em></h2>
           <p>Terbuka untuk diskusi kerja sama toko, reseller, agen, distributor, dan kebutuhan institusi.</p>
-          <a className="novemberButton novemberButtonDark" href="mailto:akvisomr@gmail.com?subject=Kemitraan%20BANYU%20AGUNG">Diskusikan Kemitraan <span>↗</span></a>
+          <a className="novemberButton novemberButtonDark" href="/permintaan?jenis=kemitraan">Diskusikan Kemitraan <span>↗</span></a>
         </section>
 
         <section className="novemberContact" id="kontak">
-          <div className="novemberContactIntro"><div className="novemberSectionNumber">06 <span>/ KONTAK RESMI</span></div><h2>Mari mulai <em>percakapan.</em></h2><p>Untuk informasi produk, pemesanan, kemitraan, dan layanan pelanggan, hubungi tim BANYU AGUNG.</p><a href="mailto:akvisomr@gmail.com">akvisomr@gmail.com ↗</a></div>
+          <div className="novemberContactIntro"><div className="novemberSectionNumber">06 <span>/ KONTAK RESMI</span></div><h2>Mari mulai <em>percakapan.</em></h2><p>Untuk informasi produk, pemesanan, kemitraan, dan layanan pelanggan, hubungi tim BANYU AGUNG.</p><a className="novemberContactRequest" href="/permintaan">Kirim permintaan melalui formulir resmi ↗</a><a href="mailto:akvisomr@gmail.com">akvisomr@gmail.com ↗</a></div>
           <div className="novemberContactList">{contacts.map((contact, index) => <a href={contact.href} target="_blank" rel="noreferrer" key={contact.phone}><span>0{index + 1} / WHATSAPP</span><strong>{contact.phone}</strong><small>Mulai percakapan ↗</small></a>)}</div>
         </section>
       </main>
