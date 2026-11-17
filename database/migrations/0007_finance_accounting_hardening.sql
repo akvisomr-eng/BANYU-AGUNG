@@ -67,3 +67,20 @@ DROP TRIGGER IF EXISTS trg_journal_balanced_posting ON journal_entries;
 CREATE TRIGGER trg_journal_balanced_posting
 BEFORE UPDATE OF status ON journal_entries
 FOR EACH ROW EXECUTE FUNCTION enforce_balanced_journal_posting();
+
+CREATE OR REPLACE FUNCTION prevent_posted_journal_line_delete()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE entry_status text;
+BEGIN
+  SELECT status INTO entry_status FROM journal_entries WHERE id = OLD.journal_entry_id;
+  IF entry_status IS DISTINCT FROM 'draft' THEN
+    RAISE EXCEPTION 'Baris jurnal hanya dapat dihapus saat jurnal berstatus draft';
+  END IF;
+  RETURN OLD;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_journal_line_delete_guard ON journal_lines;
+CREATE TRIGGER trg_journal_line_delete_guard
+BEFORE DELETE ON journal_lines
+FOR EACH ROW EXECUTE FUNCTION prevent_posted_journal_line_delete();

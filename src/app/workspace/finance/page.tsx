@@ -46,7 +46,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
         FROM invoices WHERE organization_id = ${actor.organization_id}::uuid
           AND status IN ('posted','partially_paid','overdue')`,
     sql`SELECT count(*)::int AS count, COALESCE(sum(amount),0) AS amount
-        FROM payments WHERE organization_id = ${actor.organization_id}::uuid AND status = 'settled'`
+        FROM payments WHERE organization_id = ${actor.organization_id}::uuid AND status = 'settled' AND payment_type = 'customer_receipt'`
   ]);
   const accounts = accountsRaw as Account[];
   const journals = journalsRaw as Journal[];
