@@ -49,9 +49,9 @@ export default function Home() {
     <div className="novemberSite">
       <header className="novemberHeader">
         <div className="novemberHeaderInner">
-          <Link href="/" className="novemberLogo" aria-label="BANYU AGUNG beranda">
-            <span className="novemberLogoMark">BA</span>
-            <span className="novemberLogoText">BANYU <b>AGUNG</b><small>JOLOTUNDO · MOJOKERTO</small></span>
+          <Link href="/" className="novemberLogo novemberHeritageLogo" aria-label="BANYU AGUNG – AIR MINUM JOLOTUNDO beranda">
+            <span className="novemberLogoMark" aria-hidden="true"><span>☼</span></span>
+            <span className="novemberLogoText"><strong>BANYU AGUNG</strong><span className="novemberJavanese" lang="jv">ꦧꦚꦸ ꦲꦒꦸꦁ</span><small>AIR MINUM JOLOTUNDO</small></span>
           </Link>
           <nav className="novemberDesktopNav" aria-label="Navigasi utama">
             {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
@@ -160,7 +160,10 @@ export default function Home() {
       </main>
 
       <footer className="novemberFooter">
-        <Link href="/" className="novemberLogo"><span className="novemberLogoMark">BA</span><span className="novemberLogoText">BANYU <b>AGUNG</b><small>JOLOTUNDO · MOJOKERTO</small></span></Link>
+        <Link href="/" className="novemberLogo novemberHeritageLogo" aria-label="BANYU AGUNG – AIR MINUM JOLOTUNDO beranda">
+          <span className="novemberLogoMark" aria-hidden="true"><span>☼</span></span>
+          <span className="novemberLogoText"><strong>BANYU AGUNG</strong><span className="novemberJavanese" lang="jv">ꦧꦚꦸ ꦲꦒꦸꦁ</span><small>AIR MINUM JOLOTUNDO</small></span>
+        </Link>
         <p>Air Kemasan Jolotundo · Mojokerto, Jawa Timur</p>
         <small>© {new Date().getFullYear()} BANYU AGUNG. Informasi perusahaan dan produk diperbarui setelah verifikasi data resmi.</small>
         <Link href="/workspace">Akses Workspace ↗</Link>
