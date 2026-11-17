@@ -11,7 +11,7 @@ export function SignOutButton() {
     setBusy(true);
     try {
       await authClient.signOut();
-      router.replace("/auth/sign-in");
+      router.replace("/");
       router.refresh();
     } finally { setBusy(false); }
   }

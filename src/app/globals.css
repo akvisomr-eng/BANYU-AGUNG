@@ -393,3 +393,6 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .invoiceAmount strong{display:block;color:#174b52}
 .invoiceAmount small{font-size:10px;color:#82928e}
 @media(max-width:700px){.deliveryCreateForm,.deliveryActionForm,.invoiceCreateForm{grid-template-columns:1fr}.invoiceSource,.invoiceItem{grid-template-columns:1fr}.invoiceAmount{text-align:left}.deliveryHead{flex-direction:column}}
+
+/* Role-aware account navigation */
+.novemberHeaderInner{gap:18px}.novemberAccountNav{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto}.novemberAccountLink,.novemberAccountNav .signOutButton{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:1px solid #b7cbbf;background:#f8faf5;color:#174b52;text-decoration:none;font:600 11px "DM Sans",sans-serif;white-space:nowrap;cursor:pointer}.novemberAccountLink:hover,.novemberAccountNav .signOutButton:hover{background:#e4efe7}.novemberAccountIdentity{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#607970;font-size:10px}.novemberMobileNav nav a{display:block}@media(max-width:1100px){.novemberAccountIdentity{display:none}.novemberHeaderInner{gap:10px}.novemberDesktopNav{gap:14px}}@media(max-width:900px){.novemberAccountNav{display:none}}
