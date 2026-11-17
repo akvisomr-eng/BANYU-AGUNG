@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { sql } from "@/lib/db";
 
 const inquirySchema = z.object({
   inquiry_type: z.enum(["product_info", "order", "partnership", "complaint", "other"]),
@@ -38,6 +37,7 @@ export async function createInquiry(formData: FormData) {
 
   const email = parsed.data.email || null;
   try {
+    const { sql } = await import("@/lib/db");
     const inserted = await sql`
       WITH org AS (
         SELECT id FROM organizations
