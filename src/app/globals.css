@@ -369,3 +369,27 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .qualityForm select{width:100%;padding:12px;border:1px solid #cbd9d3;background:#fbfcfa;color:#102c35;font:inherit;font-size:12px}
 .qualityForm textarea{width:100%;padding:12px;border:1px solid #cbd9d3;background:#fbfcfa;color:#102c35;font:inherit;font-size:12px;resize:vertical}
 @media(max-width:700px){.qualityItemHead{flex-direction:column}}
+
+
+/* Delivery dispatch and accounts receivable */
+.deliverySourceList,.deliveryList,.invoiceSourceList,.invoiceList{display:grid;gap:13px;margin:15px 0 28px}
+.deliverySource,.deliveryItem,.invoiceSource,.invoiceItem{background:#fff;border:1px solid #e1e9e2;padding:17px}
+.deliverySource h3,.deliveryItem h3,.invoiceSource h3,.invoiceItem h3{font-family:"Playfair Display",serif;font-size:18px;font-weight:500;margin:6px 0}
+.deliverySource small,.deliveryItem small,.invoiceSource small,.invoiceItem small{display:block;color:#82928e;font-size:10px;margin-top:4px}
+.deliveryCreateForm,.deliveryActionForm,.invoiceCreateForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
+.deliveryCreateForm label,.deliveryActionForm label,.invoiceCreateForm label{font-size:10px;color:#71858a}
+.deliveryCreateForm input,.deliveryActionForm input,.invoiceCreateForm input{display:block;width:100%;min-width:0;margin-top:5px;padding:11px 9px;border:1px solid #cbd9d3;background:#fbfcfa;color:#102c35;font:inherit;font-size:11px}
+.deliveryCreateForm button,.deliveryActionForm button,.invoiceCreateForm button{align-self:end;justify-self:start;border:0;padding:11px 14px;font:inherit;font-size:10px;cursor:pointer}
+.deliveryHead{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+.deliveryHead>strong{font-size:11px;color:#176b70}
+.deliveryActionForm{border-top:1px solid #e8eeea;padding-top:13px}
+.deliveryActionForm button{grid-column:1/-1}
+.deliveryProof a{color:#176b70;font-size:11px;font-weight:700}
+.invoiceSource,.invoiceItem{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.invoiceCreateForm{grid-column:1/-1;grid-template-columns:minmax(180px,1fr) auto;align-items:end;border-top:1px solid #e8eeea;padding-top:12px}
+.invoiceItem form{grid-column:1/-1}
+.invoiceItem form button{border:0;padding:10px 14px;font:inherit;font-size:10px;cursor:pointer}
+.invoiceAmount{text-align:right}
+.invoiceAmount strong{display:block;color:#174b52}
+.invoiceAmount small{font-size:10px;color:#82928e}
+@media(max-width:700px){.deliveryCreateForm,.deliveryActionForm,.invoiceCreateForm{grid-template-columns:1fr}.invoiceSource,.invoiceItem{grid-template-columns:1fr}.invoiceAmount{text-align:left}.deliveryHead{flex-direction:column}}
