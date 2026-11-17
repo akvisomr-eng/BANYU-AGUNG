@@ -121,8 +121,8 @@ export default async function InquiriesPage({
                     {!["closed", "spam"].includes(row.status) && (
                       <form action={convertInquiryToCustomer} className="inquiryConvertForm">
                         <input type="hidden" name="inquiry_id" value={row.id} />
-                        <label htmlFor={\`customer-type-\${row.id}\`}>Konversi ke pelanggan</label>
-                        <select id={\`customer-type-\${row.id}\`} name="customer_type" defaultValue={row.inquiry_type === "partnership" ? "reseller" : "retail"}>
+                        <label htmlFor={`customer-type-${row.id}`}>Konversi ke pelanggan</label>
+                        <select id={`customer-type-${row.id}`} name="customer_type" defaultValue={row.inquiry_type === "partnership" ? "reseller" : "retail"}>
                           <option value="retail">Pelanggan umum</option>
                           <option value="wholesale">Grosir</option>
                           <option value="reseller">Reseller</option>
@@ -134,8 +134,8 @@ export default async function InquiriesPage({
                     )}
                     <form action={updateInquiryStatus} className="inquiryStatusForm">
                       <input type="hidden" name="inquiry_id" value={row.id} />
-                      <label htmlFor={\`status-\${row.id}\`}>Perbarui status</label>
-                      <select id={\`status-\${row.id}\`} name="status" defaultValue={row.status}>
+                      <label htmlFor={`status-${row.id}`}>Perbarui status</label>
+                      <select id={`status-${row.id}`} name="status" defaultValue={row.status}>
                         {statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
                       </select>
                       <button type="submit" className="primary">Simpan</button>
