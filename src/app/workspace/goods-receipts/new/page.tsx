@@ -21,7 +21,7 @@ export default async function NewGoodsReceiptPage({searchParams}:{searchParams:P
   const actor=actors[0] as {organization_id:string;role_name:string}|undefined;
   if(!actor) redirect("/workspace?access=denied");
   const params=await searchParams;
-  if(!params.po_id || !params.warehouse_id) redirect("/workspace/purchase-orders");
+  if(!params.po_id || !params.warehouse_id || !/^[0-9a-f-]{36}$/i.test(params.po_id) || !/^[0-9a-f-]{36}$/i.test(params.warehouse_id)) redirect("/workspace/purchase-orders");
   const context=await sql`
     SELECT po.id,po.po_number,po.status,po.site_id,sup.name AS supplier_name,
       w.id AS warehouse_id,w.name AS warehouse_name,w.warehouse_type
