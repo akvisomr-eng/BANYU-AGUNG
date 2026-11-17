@@ -149,7 +149,7 @@ export async function saveAccountingConfig(formData: FormData) {
   const fields = [
     "accounts_receivable_id", "accounts_payable_id", "sales_revenue_id",
     "purchase_expense_id", "cash_account_id", "bank_account_id",
-    "inventory_asset_id", "goods_received_not_invoiced_id", "cost_of_goods_sold_id"
+    "inventory_asset_id", "goods_received_not_invoiced_id", "cost_of_goods_sold_id", "inventory_opening_equity_id"
   ] as const;
   const optionalFields = ["output_tax_id", "input_tax_id"] as const;
   const values = Object.fromEntries([...fields, ...optionalFields].map(key => [key, String(formData.get(key) ?? "").trim()]));
@@ -163,7 +163,7 @@ export async function saveAccountingConfig(formData: FormData) {
       organization_id, accounts_receivable_id, accounts_payable_id,
       sales_revenue_id, purchase_expense_id, output_tax_id, input_tax_id,
       cash_account_id, bank_account_id, inventory_asset_id,
-      goods_received_not_invoiced_id, cost_of_goods_sold_id, updated_by
+      goods_received_not_invoiced_id, cost_of_goods_sold_id, inventory_opening_equity_id, updated_by
     ) VALUES (
       ${actor.organization_id}::uuid, ${values.accounts_receivable_id}::uuid,
       ${values.accounts_payable_id}::uuid, ${values.sales_revenue_id}::uuid,
@@ -171,7 +171,7 @@ export async function saveAccountingConfig(formData: FormData) {
       ${values.input_tax_id || null}::uuid, ${values.cash_account_id}::uuid,
       ${values.bank_account_id}::uuid, ${values.inventory_asset_id}::uuid,
       ${values.goods_received_not_invoiced_id}::uuid, ${values.cost_of_goods_sold_id}::uuid,
-      ${actor.actor_id}::uuid
+      ${values.inventory_opening_equity_id}::uuid, ${actor.actor_id}::uuid
     )
     ON CONFLICT (organization_id) DO UPDATE SET
       accounts_receivable_id = EXCLUDED.accounts_receivable_id,
@@ -185,6 +185,7 @@ export async function saveAccountingConfig(formData: FormData) {
       inventory_asset_id = EXCLUDED.inventory_asset_id,
       goods_received_not_invoiced_id = EXCLUDED.goods_received_not_invoiced_id,
       cost_of_goods_sold_id = EXCLUDED.cost_of_goods_sold_id,
+      inventory_opening_equity_id = EXCLUDED.inventory_opening_equity_id,
       updated_by = EXCLUDED.updated_by,
       updated_at = now()
     RETURNING organization_id

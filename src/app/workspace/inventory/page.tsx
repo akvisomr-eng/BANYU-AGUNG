@@ -74,6 +74,7 @@ export default async function InventoryPage() {
         <Link className="sideLink" href="/workspace/purchase-orders">Purchase Orders</Link>
         <Link className="sideLink" href="/workspace/goods-receipts">Goods Receipts</Link>
         <Link className="sideActive" href="/workspace/inventory">Inventory</Link>
+        <Link className="sideLink" href="/workspace/inventory/opening-balances">Rekonsiliasi Saldo Awal</Link>
         <Link className="sideLink" href="/workspace/setup">Konfigurasi Operasional</Link>
       </aside>
       <section className="workMain">
@@ -104,7 +105,7 @@ export default async function InventoryPage() {
         {movements.length===0 ? <article className="moduleCard"><small>Belum ada pergerakan stok.</small></article> :
           <div className="orderList">{movements.map(row=><article className="orderItem" key={row.movement_no}><div><span className="inquiryType">{row.movement_no} · {movementLabels[row.movement_type]??row.movement_type}</span><h3>{row.sku} · {row.product_name}</h3><small>{row.warehouse_name} · {row.lot_code??"Tanpa lot"} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Jakarta"}).format(new Date(row.occurred_at))}</small></div><strong>{Number(row.quantity).toLocaleString("id-ID")} {row.movement_type.endsWith("_out")||row.movement_type==="issue"?"keluar":"masuk"}</strong></article>)}</div>
         }
-        <p className="workspaceFoot"><Link href="/workspace/goods-receipts">Riwayat penerimaan</Link> · Penyesuaian stok manual dan pengeluaran akan menggunakan dokumen transaksi terpisah.</p>
+        <p className="workspaceFoot"><Link href="/workspace/goods-receipts">Riwayat penerimaan</Link> · <Link href="/workspace/inventory/opening-balances">Rekonsiliasi saldo awal lot</Link> · Penyesuaian stok manual dan pengeluaran akan menggunakan dokumen transaksi terpisah.</p>
       </section>
     </main>
   );
