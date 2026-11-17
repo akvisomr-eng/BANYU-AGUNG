@@ -60,3 +60,7 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/inventory_opening_balance_regressions.sql
+      - name: Verify standard chart of accounts and safe mapping defaults
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/standard_chart_of_accounts_regressions.sql

@@ -56,6 +56,85 @@ export async function createAccount(formData: FormData) {
   redirect("/workspace/finance?account_created=1");
 }
 
+
+export async function seedStandardChartOfAccounts() {
+  const { actor, sql } = await getFinanceActor(true);
+  await sql`
+    INSERT INTO chart_of_accounts (
+      organization_id,account_code,account_name,account_type,is_control_account
+    ) VALUES
+      (${actor.organization_id}::uuid,'1101','Kas','asset',true),
+      (${actor.organization_id}::uuid,'1102','Bank','asset',true),
+      (${actor.organization_id}::uuid,'1201','Piutang Usaha','asset',true),
+      (${actor.organization_id}::uuid,'1202','Pajak Masukan','asset',false),
+      (${actor.organization_id}::uuid,'1301','Persediaan Barang Dagang','asset',true),
+      (${actor.organization_id}::uuid,'2101','Utang Usaha','liability',true),
+      (${actor.organization_id}::uuid,'2102','Pajak Keluaran','liability',false),
+      (${actor.organization_id}::uuid,'2103','GR/IR Barang Diterima Belum Ditagih','liability',true),
+      (${actor.organization_id}::uuid,'3101','Ekuitas Saldo Awal Persediaan','equity',false),
+      (${actor.organization_id}::uuid,'4101','Pendapatan Penjualan','revenue',false),
+      (${actor.organization_id}::uuid,'5101','Pembelian / Biaya Pemasok','expense',false),
+      (${actor.organization_id}::uuid,'5102','Harga Pokok Penjualan','expense',false)
+    ON CONFLICT (organization_id,account_code) DO NOTHING
+  `;
+  const configured = await sql`
+    WITH mapped AS (
+      SELECT
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='1201') AS ar_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='2101') AS ap_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='4101') AS revenue_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='5101') AS purchase_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='2102') AS output_tax_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='1202') AS input_tax_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='1101') AS cash_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='1102') AS bank_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='1301') AS inventory_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='2103') AS grni_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='5102') AS cogs_id,
+        (SELECT id FROM chart_of_accounts WHERE organization_id=${actor.organization_id}::uuid AND account_code='3101') AS opening_equity_id
+    ), saved AS (
+      INSERT INTO accounting_config (
+        organization_id,accounts_receivable_id,accounts_payable_id,sales_revenue_id,
+        purchase_expense_id,output_tax_id,input_tax_id,cash_account_id,bank_account_id,
+        inventory_asset_id,goods_received_not_invoiced_id,cost_of_goods_sold_id,
+        inventory_opening_equity_id,updated_by
+      )
+      SELECT ${actor.organization_id}::uuid,ar_id,ap_id,revenue_id,purchase_id,
+        output_tax_id,input_tax_id,cash_id,bank_id,inventory_id,grni_id,cogs_id,
+        opening_equity_id,${actor.actor_id}::uuid
+      FROM mapped
+      WHERE ar_id IS NOT NULL AND ap_id IS NOT NULL AND revenue_id IS NOT NULL
+        AND purchase_id IS NOT NULL AND output_tax_id IS NOT NULL AND input_tax_id IS NOT NULL
+        AND cash_id IS NOT NULL AND bank_id IS NOT NULL AND inventory_id IS NOT NULL
+        AND grni_id IS NOT NULL AND cogs_id IS NOT NULL AND opening_equity_id IS NOT NULL
+      ON CONFLICT (organization_id) DO UPDATE SET
+        accounts_receivable_id=COALESCE(accounting_config.accounts_receivable_id,EXCLUDED.accounts_receivable_id),
+        accounts_payable_id=COALESCE(accounting_config.accounts_payable_id,EXCLUDED.accounts_payable_id),
+        sales_revenue_id=COALESCE(accounting_config.sales_revenue_id,EXCLUDED.sales_revenue_id),
+        purchase_expense_id=COALESCE(accounting_config.purchase_expense_id,EXCLUDED.purchase_expense_id),
+        output_tax_id=COALESCE(accounting_config.output_tax_id,EXCLUDED.output_tax_id),
+        input_tax_id=COALESCE(accounting_config.input_tax_id,EXCLUDED.input_tax_id),
+        cash_account_id=COALESCE(accounting_config.cash_account_id,EXCLUDED.cash_account_id),
+        bank_account_id=COALESCE(accounting_config.bank_account_id,EXCLUDED.bank_account_id),
+        inventory_asset_id=COALESCE(accounting_config.inventory_asset_id,EXCLUDED.inventory_asset_id),
+        goods_received_not_invoiced_id=COALESCE(accounting_config.goods_received_not_invoiced_id,EXCLUDED.goods_received_not_invoiced_id),
+        cost_of_goods_sold_id=COALESCE(accounting_config.cost_of_goods_sold_id,EXCLUDED.cost_of_goods_sold_id),
+        inventory_opening_equity_id=COALESCE(accounting_config.inventory_opening_equity_id,EXCLUDED.inventory_opening_equity_id),
+        updated_by=EXCLUDED.updated_by,updated_at=now()
+      RETURNING organization_id
+    ), logged AS (
+      INSERT INTO audit_logs(organization_id,actor_user_id,action,entity_type,entity_id,after_data)
+      SELECT organization_id,${actor.actor_id}::uuid,'SEED_STANDARD_CHART_OF_ACCOUNTS',
+        'chart_of_accounts',organization_id::text,
+        jsonb_build_object('template','BANYU_AGUNG_DISTRIBUTION','account_count',12)
+      FROM saved RETURNING id
+    )
+    SELECT organization_id FROM saved
+  `;
+  if (!configured.length) redirect("/workspace/finance/settings?error=seed");
+  redirect("/workspace/finance/settings?seeded=1");
+}
+
 export async function createJournal(formData: FormData) {
   const date = String(formData.get("journal_date") ?? "");
   const description = String(formData.get("description") ?? "").trim();

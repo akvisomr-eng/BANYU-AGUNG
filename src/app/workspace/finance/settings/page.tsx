@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "../../sign-out-button";
-import { saveAccountingConfig } from "../actions";
+import { saveAccountingConfig, seedStandardChartOfAccounts } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ type Config = {
 
 export default async function AccountingSettingsPage({
   searchParams
-}: { searchParams: Promise<{ saved?: string; error?: string }> }) {
+}: { searchParams: Promise<{ saved?: string; seeded?: string; error?: string }> }) {
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
   const { sql } = await import("@/lib/db");
@@ -73,6 +73,15 @@ export default async function AccountingSettingsPage({
     <section className="workMain">
       <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / ACCOUNTING CONTROL</p><h1>Pemetaan Akun Otomatis</h1><p className="muted">Pengaturan OWNER untuk jurnal otomatis penjualan, pembelian, valuasi persediaan, GR/IR, HPP, dan saldo awal.</p></div><SignOutButton /></header>
       {params.saved === "1" && <p className="authSuccess" role="status">Pemetaan akun berhasil disimpan.</p>}
+      {params.seeded === "1" && <p className="authSuccess" role="status">12 akun standar dibuat atau dilengkapi. Pemetaan yang sudah ada tidak ditimpa.</p>}
+      {params.error === "seed" && <p className="authError" role="alert">Template tidak dapat diterapkan. Periksa apakah kode akun standar sudah digunakan dengan tipe akun berbeda.</p>}
+      <article className="moduleCard">
+        <strong>Setup awal BANYU AGUNG</strong>
+        <p className="muted">Buat atau lengkapi 12 akun dasar untuk kas, bank, piutang, persediaan, utang, GR/IR, pajak, ekuitas saldo awal, pendapatan, pembelian, dan HPP. Akun yang sudah ada dan pemetaan nonkosong tidak akan ditimpa.</p>
+        <form action={seedStandardChartOfAccounts}>
+          <button className="primary" type="submit">Buat / lengkapi akun standar</button>
+        </form>
+      </article>
       {params.error && <p className="authError" role="alert">Pemetaan tidak valid. Pastikan akun aktif, satu organisasi, dan memiliki tipe yang sesuai.</p>}
       <article className="moduleCard">
         <strong>{ready ? "Pemetaan inti sudah tersedia" : "Pemetaan akun belum lengkap"}</strong>
