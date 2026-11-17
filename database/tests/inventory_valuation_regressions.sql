@@ -116,7 +116,7 @@ BEGIN
     quantity,unit_cost,reference_type,reference_id)
   VALUES(org_id,'MOV-QA-DSP-001','sales_pick',warehouse_id,v_product_id,v_lot_id,4,999,'delivery',gen_random_uuid());
   SELECT quantity_on_hand,carrying_value INTO observed_qty,observed_cost
-  FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=product_id AND lot_id=lot_id;
+  FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=v_product_id AND lot_id=v_lot_id;
   IF observed_qty<>16 OR observed_cost<>1760 THEN
     RAISE EXCEPTION 'Sales pick did not consume weighted lot cost: qty %, value %',observed_qty,observed_cost;
   END IF;
