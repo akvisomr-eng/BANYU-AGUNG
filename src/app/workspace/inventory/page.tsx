@@ -24,10 +24,16 @@ export default async function InventoryPage() {
   const actor=actors[0] as {organization_id:string;role_name:string}|undefined;
   if(!actor) redirect("/workspace?access=denied");
   const balances=await sql`
+    WITH lot_balance_totals AS (
+      SELECT organization_id,product_id,lot_id,sum(quantity_on_hand) AS lot_quantity
+      FROM inventory_balances
+      WHERE organization_id=${actor.organization_id}::uuid AND lot_id IS NOT NULL
+      GROUP BY organization_id,product_id,lot_id
+    )
     SELECT w.code AS warehouse_code,w.name AS warehouse_name,p.sku,p.name AS product_name,u.code AS unit_code,
       l.lot_code,l.quality_status,l.expires_at,ib.quantity_on_hand,ib.quantity_reserved,
       CASE WHEN l.quality_status='released' THEN ib.quantity_on_hand-ib.quantity_reserved ELSE 0 END AS available_released,
-      COALESCE(ilc.carrying_value,0) AS carrying_value,
+      CASE WHEN lbt.lot_quantity>0 THEN ilc.carrying_value*ib.quantity_on_hand/lbt.lot_quantity ELSE 0 END AS carrying_value,
       CASE WHEN ilc.quantity_on_hand>0 THEN ilc.carrying_value/ilc.quantity_on_hand ELSE 0 END AS average_unit_cost,
       COALESCE(ilc.opening_balance_pending,false) AS opening_balance_pending
     FROM inventory_balances ib
@@ -37,6 +43,8 @@ export default async function InventoryPage() {
     LEFT JOIN inventory_lots l ON l.id=ib.lot_id
     LEFT JOIN inventory_lot_costs ilc ON ilc.organization_id=ib.organization_id
       AND ilc.product_id=ib.product_id AND ilc.lot_id=ib.lot_id
+    LEFT JOIN lot_balance_totals lbt ON lbt.organization_id=ib.organization_id
+      AND lbt.product_id=ib.product_id AND lbt.lot_id=ib.lot_id
     WHERE ib.organization_id=${actor.organization_id}::uuid
     ORDER BY w.name,p.name,l.expires_at NULLS LAST LIMIT 500
   ` as Balance[];
