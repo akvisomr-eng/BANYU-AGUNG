@@ -7,6 +7,7 @@ DECLARE
   org_b uuid := gen_random_uuid();
   supplier_a uuid := gen_random_uuid();
   supplier_b uuid := gen_random_uuid();
+  actor_id uuid := gen_random_uuid();
   bill_id uuid := gen_random_uuid();
   overpay_bill_id uuid := gen_random_uuid();
   journal_id uuid := gen_random_uuid();
@@ -22,6 +23,8 @@ BEGIN
   INSERT INTO suppliers (id, organization_id, supplier_code, name) VALUES
     (supplier_a, org_a, 'SUP-A', 'Supplier A'),
     (supplier_b, org_b, 'SUP-B', 'Supplier B');
+  INSERT INTO user_profiles (id, organization_id, auth_subject, full_name, email, status)
+  VALUES (actor_id, org_a, 'ci-actor-a', 'CI Actor', 'ci-actor@example.test', 'active');
 
   INSERT INTO supplier_bills (
     id, organization_id, supplier_id, supplier_invoice_number,
@@ -30,7 +33,7 @@ BEGIN
     bill_id, org_a, supplier_a, 'INV-AP-001',
     DATE '2026-11-01', 100, 11, 111
   );
-  UPDATE supplier_bills SET status = 'posted' WHERE id = bill_id;
+  UPDATE supplier_bills SET status = 'posted', posted_by = actor_id WHERE id = bill_id;
 
   INSERT INTO payments (
     organization_id, payment_number, payment_type, party_type, party_id,
@@ -77,11 +80,12 @@ BEGIN
 
   INSERT INTO supplier_bills (
     id, organization_id, supplier_id, supplier_invoice_number,
-    invoice_date, subtotal, tax_amount, total_amount, status
+    invoice_date, subtotal, tax_amount, total_amount
   ) VALUES (
     overpay_bill_id, org_a, supplier_a, 'INV-AP-002',
-    DATE '2026-11-01', 100, 0, 100, 'posted'
+    DATE '2026-11-01', 100, 0, 100
   );
+  UPDATE supplier_bills SET status = 'posted', posted_by = actor_id WHERE id = overpay_bill_id;
   BEGIN
     INSERT INTO payments (
       organization_id, payment_number, payment_type, party_type, party_id,
