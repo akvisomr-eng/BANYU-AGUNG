@@ -29,7 +29,7 @@ DECLARE
 BEGIN
   INSERT INTO organizations(id,legal_name) VALUES(org_id,'Inventory Valuation Regression');
   INSERT INTO user_profiles(id,organization_id,auth_subject,full_name,email,status)
-  VALUES(actor_id,org_id,'inventory-qa-actor','Inventory QA Actor','inventory-qa@example.test','active');
+  VALUES(actor_id,org_id,'inventory-qa-'||org_id::text,'Inventory QA Actor','inventory-qa-'||org_id::text||'@example.test','active');
   INSERT INTO sites(id,organization_id,code,name,site_type) VALUES(site_id,org_id,'QA','QA Site','warehouse');
   INSERT INTO warehouses(id,organization_id,site_id,code,name,warehouse_type)
   VALUES(warehouse_id,org_id,site_id,'FG','Finished Goods','finished_goods');
