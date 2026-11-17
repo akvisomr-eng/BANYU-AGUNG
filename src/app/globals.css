@@ -299,3 +299,14 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .inquiryConverted a{color:#176b70;font-weight:700;text-decoration:none}
 @media(max-width:900px){.customerList{grid-template-columns:1fr}}
 @media(max-width:520px){.customerItem{padding:16px}.inquiryConvertForm{grid-template-columns:1fr}.inquiryConvertForm button{width:100%}}
+
+
+/* Operational setup master data */
+.setupGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 32px}
+.setupGrid .metric{min-width:0}
+.setupDataGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.setupDataGrid .moduleCard p{font-size:12px;line-height:1.6;color:#36565e;border-top:1px solid #e7eeea;padding-top:10px}
+.setupDataGrid .moduleCard p small{display:block;font-size:10px;color:#82928e;margin-top:3px}
+.setupNotice{padding:14px;background:#fff5dd;color:#795d27;font-size:12px;line-height:1.6}
+.setupNotice a{color:#176b70;font-weight:700}
+@media(max-width:900px){.setupGrid,.setupDataGrid{grid-template-columns:1fr}}
