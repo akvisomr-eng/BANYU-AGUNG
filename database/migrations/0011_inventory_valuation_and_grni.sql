@@ -147,12 +147,7 @@ BEGIN
     ON CONFLICT (organization_id, product_id, lot_id) DO UPDATE SET
       quantity_on_hand = inventory_lot_costs.quantity_on_hand + EXCLUDED.quantity_on_hand,
       carrying_value = inventory_lot_costs.carrying_value + EXCLUDED.carrying_value,
-      updated_at = now()
-    WHERE inventory_lot_costs.opening_balance_pending = false;
-
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'Saldo awal lot belum direkonsiliasi; penerimaan baru ditahan';
-    END IF;
+      updated_at = now();
     IF value_amount > 0 THEN
       IF cfg.inventory_asset_id IS NULL OR cfg.goods_received_not_invoiced_id IS NULL THEN
         RAISE EXCEPTION 'Pemetaan Persediaan dan GR/IR wajib diatur sebelum penerimaan diposting';
@@ -292,3 +287,40 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+
+-- Valuation and GR/IR subledgers are append-only. Cost rows can only be changed
+-- by the stock-movement trigger, never by an application-side direct UPDATE.
+CREATE OR REPLACE FUNCTION guard_inventory_lot_cost_write()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF pg_trigger_depth() <= 1 THEN
+    RAISE EXCEPTION 'Saldo valuasi lot hanya boleh berubah melalui pergerakan stok yang diposting';
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_guard_inventory_lot_cost_write ON inventory_lot_costs;
+CREATE TRIGGER trg_guard_inventory_lot_cost_write
+BEFORE INSERT OR UPDATE OR DELETE ON inventory_lot_costs
+FOR EACH ROW EXECUTE FUNCTION guard_inventory_lot_cost_write();
+
+CREATE OR REPLACE FUNCTION guard_inventory_subledger_immutable()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'INSERT' AND pg_trigger_depth() > 1 THEN RETURN NEW; END IF;
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'Subledger persediaan tidak dapat dihapus';
+  END IF;
+  RAISE EXCEPTION 'Subledger persediaan tidak dapat diubah';
+END;
+$$;
+DROP TRIGGER IF EXISTS trg_guard_inventory_valuation_immutable ON inventory_valuation_entries;
+CREATE TRIGGER trg_guard_inventory_valuation_immutable
+BEFORE INSERT OR UPDATE OR DELETE ON inventory_valuation_entries
+FOR EACH ROW EXECUTE FUNCTION guard_inventory_subledger_immutable();
+DROP TRIGGER IF EXISTS trg_guard_inventory_grni_immutable ON inventory_grni_applications;
+CREATE TRIGGER trg_guard_inventory_grni_immutable
+BEFORE INSERT OR UPDATE OR DELETE ON inventory_grni_applications
+FOR EACH ROW EXECUTE FUNCTION guard_inventory_subledger_immutable();
