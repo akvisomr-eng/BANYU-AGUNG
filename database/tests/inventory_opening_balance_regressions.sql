@@ -48,7 +48,8 @@ BEGIN
 
   INSERT INTO inventory_opening_balances(organization_id,product_id,lot_id,quantity,total_value,posted_by)
   VALUES(v_org,v_product,v_lot,25,2500,v_actor)
-  RETURNING id,journal_entry_id INTO v_opening,v_journal;
+  RETURNING id INTO v_opening;
+  SELECT journal_entry_id INTO v_journal FROM inventory_opening_balances WHERE id=v_opening;
 
   SELECT quantity_on_hand,carrying_value,opening_balance_pending
   INTO v_qty,v_value,v_pending
