@@ -141,6 +141,15 @@ BEGIN
     IF NEW.reference_type <> 'goods_receipt' OR NEW.reference_id IS NULL THEN
       RAISE EXCEPTION 'Penerimaan bernilai harus berasal dari dokumen goods receipt';
     END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM goods_receipts gr
+      JOIN goods_receipt_items gri ON gri.goods_receipt_id = gr.id
+      WHERE gr.id = NEW.reference_id AND gr.organization_id = NEW.organization_id
+        AND gr.status = 'posted' AND gri.product_id = NEW.product_id
+        AND gri.lot_id = NEW.lot_id AND gri.quantity_received = NEW.quantity
+    ) THEN
+      RAISE EXCEPTION 'Pergerakan penerimaan tidak cocok dengan baris goods receipt';
+    END IF;
     value_amount := round(NEW.quantity * NEW.unit_cost, 2);
     INSERT INTO inventory_lot_costs (
       organization_id, product_id, lot_id, quantity_on_hand, carrying_value
