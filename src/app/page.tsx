@@ -55,13 +55,11 @@ export default function Home() {
           </Link>
           <nav className="novemberDesktopNav" aria-label="Navigasi utama">
             {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-            <Link className="novemberWorkspace" href="/workspace">Workspace ↗</Link>
           </nav>
           <details className="novemberMobileNav">
             <summary aria-label="Buka menu navigasi"><span></span><span></span><span></span></summary>
             <nav aria-label="Navigasi mobile">
               {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-              <Link href="/workspace">Akses Workspace ↗</Link>
             </nav>
           </details>
         </div>
@@ -170,7 +168,6 @@ export default function Home() {
         </Link>
         <p>Air Kemasan Jolotundo · Mojokerto, Jawa Timur</p>
         <small>© {new Date().getFullYear()} BANYU AGUNG. Informasi perusahaan dan produk diperbarui setelah verifikasi data resmi.</small>
-        <Link href="/workspace">Akses Workspace ↗</Link>
       </footer>
     </div>
   );
