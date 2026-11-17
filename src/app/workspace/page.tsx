@@ -44,6 +44,7 @@ export default async function WorkspacePage() {
       <Link className="sideLink" href="/workspace/deliveries">Delivery</Link>
       <Link className="sideLink" href="/workspace/invoices">Invoices</Link>
       <Link className="sideLink" href="/workspace/finance">Finance & Accounting</Link>
+      <Link className="sideLink" href="/workspace/payables">Utang Pemasok</Link>
       <Link className="sideLink" href="/workspace/products">Master Produk</Link>
       {modules.map(m=><a className="sideLink" href="#modul" key={m[0]}>{m[0]}</a>)}
       <Link className="sideLink" href="/">← Kembali ke Website</Link>
