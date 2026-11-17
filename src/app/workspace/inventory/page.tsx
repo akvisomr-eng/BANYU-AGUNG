@@ -5,7 +5,7 @@ import { SignOutButton } from "../sign-out-button";
 
 export const dynamic = "force-dynamic";
 
-type Balance={warehouse_code:string;warehouse_name:string;sku:string;product_name:string;unit_code:string|null;lot_code:string|null;quality_status:string|null;expires_at:string|null;quantity_on_hand:string|number;quantity_reserved:string|number;available_released:string|number};
+type Balance={warehouse_code:string;warehouse_name:string;sku:string;product_name:string;unit_code:string|null;lot_code:string|null;quality_status:string|null;expires_at:string|null;quantity_on_hand:string|number;quantity_reserved:string|number;available_released:string|number;carrying_value:string|number|null;average_unit_cost:string|number|null;opening_balance_pending:boolean};
 type Movement={movement_no:string;movement_type:string;warehouse_name:string;sku:string;product_name:string;lot_code:string|null;quantity:string|number;occurred_at:string};
 
 const qualityLabels:Record<string,string>={pending:"Menunggu QC",released:"Lulus QC",quarantined:"Karantina",rejected:"Ditolak",expired:"Kedaluwarsa"};
@@ -24,14 +24,27 @@ export default async function InventoryPage() {
   const actor=actors[0] as {organization_id:string;role_name:string}|undefined;
   if(!actor) redirect("/workspace?access=denied");
   const balances=await sql`
+    WITH lot_balance_totals AS (
+      SELECT organization_id,product_id,lot_id,sum(quantity_on_hand) AS lot_quantity
+      FROM inventory_balances
+      WHERE organization_id=${actor.organization_id}::uuid AND lot_id IS NOT NULL
+      GROUP BY organization_id,product_id,lot_id
+    )
     SELECT w.code AS warehouse_code,w.name AS warehouse_name,p.sku,p.name AS product_name,u.code AS unit_code,
       l.lot_code,l.quality_status,l.expires_at,ib.quantity_on_hand,ib.quantity_reserved,
-      CASE WHEN l.quality_status='released' THEN ib.quantity_on_hand-ib.quantity_reserved ELSE 0 END AS available_released
+      CASE WHEN l.quality_status='released' THEN ib.quantity_on_hand-ib.quantity_reserved ELSE 0 END AS available_released,
+      CASE WHEN lbt.lot_quantity>0 THEN ilc.carrying_value*ib.quantity_on_hand/lbt.lot_quantity ELSE 0 END AS carrying_value,
+      CASE WHEN ilc.quantity_on_hand>0 THEN ilc.carrying_value/ilc.quantity_on_hand ELSE 0 END AS average_unit_cost,
+      COALESCE(ilc.opening_balance_pending,false) AS opening_balance_pending
     FROM inventory_balances ib
     JOIN warehouses w ON w.id=ib.warehouse_id
     JOIN products p ON p.id=ib.product_id
     LEFT JOIN units_of_measure u ON u.id=p.base_unit_id
     LEFT JOIN inventory_lots l ON l.id=ib.lot_id
+    LEFT JOIN inventory_lot_costs ilc ON ilc.organization_id=ib.organization_id
+      AND ilc.product_id=ib.product_id AND ilc.lot_id=ib.lot_id
+    LEFT JOIN lot_balance_totals lbt ON lbt.organization_id=ib.organization_id
+      AND lbt.product_id=ib.product_id AND lbt.lot_id=ib.lot_id
     WHERE ib.organization_id=${actor.organization_id}::uuid
     ORDER BY w.name,p.name,l.expires_at NULLS LAST LIMIT 500
   ` as Balance[];
@@ -48,6 +61,9 @@ export default async function InventoryPage() {
   const total=balances.reduce((sum,row)=>sum+Number(row.quantity_on_hand),0);
   const available=balances.reduce((sum,row)=>sum+Number(row.available_released),0);
   const pending=balances.filter(row=>row.quality_status==="pending").reduce((sum,row)=>sum+Number(row.quantity_on_hand),0);
+  const totalValue=balances.reduce((sum,row)=>sum+Number(row.carrying_value??0),0);
+  const openingPending=balances.filter(row=>row.opening_balance_pending).length;
+  const money=(value:number)=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(value);
 
   return (
     <main className="workspace">
@@ -66,12 +82,13 @@ export default async function InventoryPage() {
           <article className="metric"><span>Total stok tercatat</span><strong>{total.toLocaleString("id-ID")}</strong><small>Semua status mutu</small></article>
           <article className="metric"><span>Stok siap tersedia</span><strong>{available.toLocaleString("id-ID")}</strong><small>Hanya lot lulus QC, dikurangi reservasi</small></article>
           <article className="metric"><span>Menunggu QC</span><strong>{pending.toLocaleString("id-ID")}</strong><small>Belum boleh dipakai untuk pemenuhan</small></article>
-          <article className="metric"><span>Baris stok</span><strong>{balances.length}</strong><small>Per gudang dan lot</small></article>
+          <article className="metric"><span>Nilai persediaan</span><strong>{money(totalValue)}</strong><small>Nilai subledger per lot</small></article>
         </div>
         <div className="inventoryNotice">Lot yang baru diterima otomatis berstatus <b>Menunggu QC</b>. Angka “siap tersedia” hanya menghitung lot berstatus lulus QC; penerimaan barang tidak otomatis menyatakan produk layak edar.</div>
+        {openingPending>0 && <div className="inventoryNotice">Ada {openingPending} lot dengan saldo awal yang belum direkonsiliasi ke buku besar. Lot tersebut ditahan dari pengiriman sampai nilai pembukaan disahkan.</div>}
         <h2>Saldo stok</h2>
         {balances.length===0 ? <article className="moduleCard"><strong>Belum ada saldo stok</strong><small>Stok akan muncul setelah purchase order disetujui dan penerimaan barang diposting.</small><Link className="moduleOpen" href="/workspace/purchase-orders">Buka purchase orders ↗</Link></article> :
-          <div className="inventoryTableWrap"><table className="inventoryTable"><thead><tr><th>Produk / Lot</th><th>Gudang</th><th>On hand</th><th>Reserved</th><th>Siap tersedia</th><th>Status mutu</th><th>Kedaluwarsa</th></tr></thead><tbody>
+          <div className="inventoryTableWrap"><table className="inventoryTable"><thead><tr><th>Produk / Lot</th><th>Gudang</th><th>On hand</th><th>Reserved</th><th>Siap tersedia</th><th>Biaya rata-rata</th><th>Nilai persediaan</th><th>Status mutu</th><th>Valuasi</th><th>Kedaluwarsa</th></tr></thead><tbody>
             {balances.map((row)=><tr key={row.warehouse_code+row.sku+(row.lot_code??"")}>
               <td><b>{row.sku}</b><small>{row.product_name} · {row.lot_code ?? "Tanpa lot"} · {row.unit_code ?? "Satuan belum diisi"}</small></td>
               <td>{row.warehouse_code}<small>{row.warehouse_name}</small></td>
@@ -79,7 +96,7 @@ export default async function InventoryPage() {
               <td>{Number(row.quantity_reserved).toLocaleString("id-ID")}</td>
               <td>{Number(row.available_released).toLocaleString("id-ID")}</td>
               <td><span className={`inquiryStatus ${row.quality_status==="released"?"inquiryStatus-converted":row.quality_status==="pending"?"inquiryStatus-new":"inquiryStatus-spam"}`}>{qualityLabels[row.quality_status??""]??"Tidak diketahui"}</span></td>
-              <td>{row.expires_at ? new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(row.expires_at)) : "—"}</td>
+              <td><span className={`inquiryStatus ${row.opening_balance_pending?"inquiryStatus-spam":"inquiryStatus-converted"}`}>{row.opening_balance_pending?"Saldo awal perlu rekonsiliasi":"Tervaluasi"}</span></td>\n              <td>{row.expires_at ? new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(row.expires_at)) : "—"}</td>
             </tr>)}
           </tbody></table></div>
         }

@@ -52,3 +52,7 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/migration_regressions.sql
+      - name: Verify inventory valuation, GR/IR and COGS invariants
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/inventory_valuation_regressions.sql

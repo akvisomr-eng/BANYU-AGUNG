@@ -12,6 +12,8 @@ type Config = {
   sales_revenue_id: string | null; purchase_expense_id: string | null;
   output_tax_id: string | null; input_tax_id: string | null;
   cash_account_id: string | null; bank_account_id: string | null;
+  inventory_asset_id: string | null; goods_received_not_invoiced_id: string | null;
+  cost_of_goods_sold_id: string | null;
 };
 
 export default async function AccountingSettingsPage({
@@ -36,7 +38,8 @@ export default async function AccountingSettingsPage({
       WHERE organization_id = ${actor.organization_id}::uuid AND is_active = true
       ORDER BY account_code`,
     sql`SELECT accounts_receivable_id,accounts_payable_id,sales_revenue_id,purchase_expense_id,
-      output_tax_id,input_tax_id,cash_account_id,bank_account_id
+      output_tax_id,input_tax_id,cash_account_id,bank_account_id,
+      inventory_asset_id,goods_received_not_invoiced_id,cost_of_goods_sold_id
       FROM accounting_config WHERE organization_id = ${actor.organization_id}::uuid`
   ]);
   const accounts = accountRows as Account[];
@@ -50,7 +53,10 @@ export default async function AccountingSettingsPage({
     { name: "output_tax_id", label: "Pajak keluaran (opsional)", type: "liability", required: false },
     { name: "input_tax_id", label: "Pajak masukan (opsional)", type: "asset", required: false },
     { name: "cash_account_id", label: "Kas", type: "asset", required: true },
-    { name: "bank_account_id", label: "Bank", type: "asset", required: true }
+    { name: "bank_account_id", label: "Bank", type: "asset", required: true },
+    { name: "inventory_asset_id", label: "Persediaan", type: "asset", required: true },
+    { name: "goods_received_not_invoiced_id", label: "GR/IR — Barang diterima belum ditagih", type: "liability", required: true },
+    { name: "cost_of_goods_sold_id", label: "Harga Pokok Penjualan (HPP)", type: "expense", required: true }
   ] as const;
   const ready = fields.filter(f => f.required).every(f => Boolean(config[f.name as keyof Config]));
   return <main className="workspace">
@@ -64,12 +70,12 @@ export default async function AccountingSettingsPage({
       <Link className="sideActive" href="/workspace/finance/settings">Pemetaan Akun</Link>
     </aside>
     <section className="workMain">
-      <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / ACCOUNTING CONTROL</p><h1>Pemetaan Akun Otomatis</h1><p className="muted">Pengaturan OWNER untuk jurnal otomatis transaksi invoice dan utang pemasok.</p></div><SignOutButton /></header>
+      <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / ACCOUNTING CONTROL</p><h1>Pemetaan Akun Otomatis</h1><p className="muted">Pengaturan OWNER untuk jurnal otomatis penjualan, pembelian, valuasi persediaan, GR/IR, dan HPP.</p></div><SignOutButton /></header>
       {params.saved === "1" && <p className="authSuccess" role="status">Pemetaan akun berhasil disimpan.</p>}
       {params.error && <p className="authError" role="alert">Pemetaan tidak valid. Pastikan akun aktif, satu organisasi, dan memiliki tipe yang sesuai.</p>}
       <article className="moduleCard">
         <strong>{ready ? "Pemetaan inti sudah tersedia" : "Pemetaan akun belum lengkap"}</strong>
-        <p className="muted">Invoice dan faktur pemasok tidak dapat diposting sebelum akun wajib dipetakan. Setiap transaksi akan menghasilkan jurnal berimbang dalam transaksi database yang sama.</p>
+        <p className="muted">Invoice, penerimaan barang, faktur pemasok, dan pengiriman tidak dapat diposting sebelum akun wajib dipetakan. Setiap transaksi menghasilkan jurnal berimbang dalam transaksi database yang sama.</p>
       </article>
       {accounts.length === 0 ? <p className="notice">Buat akun pada Chart of Accounts terlebih dahulu.</p> :
       <form action={saveAccountingConfig} className="deliveryCreateForm">
@@ -83,7 +89,7 @@ export default async function AccountingSettingsPage({
         </label>)}
         <button className="primary" type="submit">Simpan pemetaan akun</button>
       </form>}
-      <p className="workspaceFoot">Catatan: akun pembelian pada tahap ini diposting ke biaya pembelian. Integrasi valuasi persediaan dan GR/IR masih menjadi pekerjaan terpisah. <Link href="/workspace/finance">Kembali ke keuangan</Link></p>
+      <p className="workspaceFoot">Penerimaan barang mendebit Persediaan dan mengkredit GR/IR. Faktur pemasok yang terkait PO menghapus GR/IR; pengiriman mendebit HPP dan mengkredit Persediaan. Saldo awal lot lama harus direkonsiliasi sebelum dapat dikirim. <Link href="/workspace/finance">Kembali ke keuangan</Link></p>
     </section>
   </main>;
 }

@@ -136,17 +136,12 @@ export async function dispatchDelivery(formData:FormData) {
       )
       SELECT c.organization_id,
         'DSP-'||to_char(now(),'YYYYMMDD')||'-'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,8)),
-        'sales_pick',a.warehouse_id,di.product_id,di.lot_id,di.quantity,cost.unit_cost,
+        'sales_pick',a.warehouse_id,di.product_id,di.lot_id,di.quantity,0,
         'delivery',di.delivery_id,now(),c.actor_id
       FROM delivery_items di
       JOIN sales_order_allocations a ON a.id=di.allocation_id
       JOIN context c ON c.delivery_id=di.delivery_id
       CROSS JOIN (SELECT count(*) AS n FROM deducted) d
-      LEFT JOIN LATERAL (
-        SELECT sm.unit_cost FROM stock_movements sm
-        WHERE sm.lot_id=di.lot_id AND sm.movement_type='receipt'
-        ORDER BY sm.occurred_at DESC LIMIT 1
-      ) cost ON true
       WHERE d.n>0
       RETURNING id
     ),
