@@ -111,11 +111,11 @@ BEGIN
      AND NEW.posted_by IS NOT DISTINCT FROM OLD.posted_by
      AND NEW.paid_amount >= OLD.paid_amount
      AND NEW.paid_amount <= NEW.total_amount
-     AND NEW.status = CASE
-       WHEN NEW.paid_amount >= NEW.total_amount THEN 'paid'
-       WHEN NEW.paid_amount > 0 THEN 'partially_paid'
-       ELSE OLD.status
-     END THEN
+     AND (
+       (NEW.paid_amount >= NEW.total_amount AND NEW.status = 'paid')
+       OR (NEW.paid_amount > 0 AND NEW.paid_amount < NEW.total_amount AND NEW.status = 'partially_paid')
+       OR (NEW.paid_amount = 0 AND NEW.status = OLD.status)
+     ) THEN
     RETURN NEW;
   END IF;
 
