@@ -50,7 +50,7 @@ export default function Home() {
       <header className="novemberHeader">
         <div className="novemberHeaderInner">
           <Link href="/" className="novemberLogo novemberHeritageLogo" aria-label="BANYU AGUNG – AIR MINUM JOLOTUNDO beranda">
-            <span className="novemberLogoMark" aria-hidden="true"><span>☼</span></span>
+            <span className="novemberLogoMark" aria-hidden="true"><img src="/images/banyu-agung-surya-air-emblem.svg" alt="" /></span>
             <span className="novemberLogoText"><strong>BANYU AGUNG</strong><span className="novemberJavanese" lang="jv">ꦧꦚꦸ ꦲꦒꦸꦁ</span><small>AIR MINUM JOLOTUNDO</small></span>
           </Link>
           <nav className="novemberDesktopNav" aria-label="Navigasi utama">
@@ -165,7 +165,7 @@ export default function Home() {
 
       <footer className="novemberFooter">
         <Link href="/" className="novemberLogo novemberHeritageLogo" aria-label="BANYU AGUNG – AIR MINUM JOLOTUNDO beranda">
-          <span className="novemberLogoMark" aria-hidden="true"><span>☼</span></span>
+          <span className="novemberLogoMark" aria-hidden="true"><img src="/images/banyu-agung-surya-air-emblem.svg" alt="" /></span>
           <span className="novemberLogoText"><strong>BANYU AGUNG</strong><span className="novemberJavanese" lang="jv">ꦧꦚꦸ ꦲꦒꦸꦁ</span><small>AIR MINUM JOLOTUNDO</small></span>
         </Link>
         <p>Air Kemasan Jolotundo · Mojokerto, Jawa Timur</p>

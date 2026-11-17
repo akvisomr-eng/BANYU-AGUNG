@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+<title id="title">Lambang Surya Air BANYU AGUNG</title><desc id="desc">Lambang surya terinspirasi ornamen Majapahit, dimodifikasi dengan tetes air dan tiga aliran air sebagai identitas BANYU AGUNG.</desc>
+<defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f2d99d"/><stop offset="1" stop-color="#a87932"/></linearGradient><linearGradient id="teal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3c9b91"/><stop offset="1" stop-color="#0c494b"/></linearGradient></defs>
+<circle cx="120" cy="120" r="105" fill="#103f42"/><circle cx="120" cy="120" r="96" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
+<g fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round">
+<path d="M120 18v23M120 199v23M18 120h23M199 120h23M48 48l17 17M175 175l17 17M192 48l-17 17M65 175l-17 17"/>
+<path d="M120 34l-8 13h16zM206 120l-13-8v16zM120 206l-8-13h16zM34 120l13-8v16z" fill="url(#gold)" stroke="none"/>
+<path d="M77 48l8 15M163 177l8 15M192 77l-15 8M63 163l-15 8M163 63l8-15M77 192l8-15M48 77l15 8M177 163l15 8"/>
+</g>
+<circle cx="120" cy="120" r="66" fill="#f3eedc" stroke="url(#gold)" stroke-width="4"/>
+<circle cx="120" cy="120" r="57" fill="none" stroke="#b28a4b" stroke-width="1.5" stroke-dasharray="2 5"/>
+<path d="M120 70C107 88 91 105 91 124a29 29 0 0 0 58 0c0-19-16-36-29-54z" fill="url(#teal)" stroke="#b28a4b" stroke-width="2"/>
+<path d="M105 124c9-8 21-8 30 0M100 137c12-8 28-8 40 0M106 150c9-6 19-6 28 0" fill="none" stroke="#f3eedc" stroke-width="4" stroke-linecap="round"/>
+<path d="M120 87c-7 11-14 19-14 31 0 7 4 13 10 16" fill="none" stroke="#a9d9cf" stroke-width="3" stroke-linecap="round"/>
+<path d="M84 173q36 19 72 0" fill="none" stroke="#b28a4b" stroke-width="3" stroke-linecap="round"/>
+</svg>

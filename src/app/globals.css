@@ -229,3 +229,14 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .novemberProductCard:nth-child(3) .novemberProductVisual img{width:min(90%,270px);height:195px}
 .novemberProductWord{font-size:7px;letter-spacing:.17em;color:#67877b}
 @media(max-width:560px){.novemberProductVisual{height:225px}.novemberProductVisual img{height:195px}}
+
+/* Custom Surya Air emblem and clear product artwork presentation */
+.novemberHeritageLogo .novemberLogoMark{width:52px;height:52px;border:0;background:transparent;box-shadow:none;overflow:visible;flex:0 0 auto}
+.novemberHeritageLogo .novemberLogoMark img{display:block;width:100%;height:100%;object-fit:contain}
+.novemberHeritageLogo .novemberLogoMark span{display:none}
+.novemberProductVisual{grid-template-rows:minmax(0,1fr) auto;padding:12px 18px 13px;background:linear-gradient(145deg,#f5f0df,#e3eee5)!important}
+.novemberProductVisual img{width:min(90%,270px);height:190px;max-height:100%;object-fit:contain;align-self:center;justify-self:center}
+.novemberProductCard:nth-child(2) .novemberProductVisual img{height:200px;width:min(94%,290px)}
+.novemberProductCard:nth-child(3) .novemberProductVisual img{height:180px;width:min(92%,280px)}
+.novemberProductWord{position:relative;z-index:1;padding:4px 9px;border:1px solid #c6a76d;border-radius:999px;background:#f7f3e7;color:#55766b;font-size:7px;letter-spacing:.16em}
+@media(max-width:560px){.novemberHeritageLogo .novemberLogoMark{width:45px;height:45px}.novemberProductVisual{height:225px}.novemberProductVisual img{height:180px}.novemberProductCard:nth-child(2) .novemberProductVisual img{height:190px}}
