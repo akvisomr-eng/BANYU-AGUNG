@@ -2,12 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "../sign-out-button";
-import { updateInquiryStatus } from "./actions";
+import { convertInquiryToCustomer, updateInquiryStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 type Inquiry = {
   id: string;
+  customer_id: string | null;
   inquiry_type: string;
   contact_name: string;
   phone: string;
@@ -25,7 +26,7 @@ const labels: Record<string, string> = {
   complaint: "Layanan / keluhan",
   other: "Lainnya",
 };
-const statuses = ["new", "assigned", "contacted", "qualified", "converted", "closed", "spam"];
+const statuses = ["new", "assigned", "contacted", "qualified", "closed", "spam"];
 const statusLabels: Record<string, string> = {
   new: "Baru", assigned: "Ditugaskan", contacted: "Dihubungi",
   qualified: "Prospek", converted: "Menjadi pelanggan", closed: "Selesai", spam: "Spam",
@@ -34,7 +35,7 @@ const statusLabels: Record<string, string> = {
 export default async function InquiriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ updated?: string; error?: string }>;
+  searchParams: Promise<{ updated?: string; converted?: string; error?: string }>;
 }) {
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
@@ -55,7 +56,7 @@ export default async function InquiriesPage({
   if (!actor) redirect("/workspace?access=denied");
 
   const rows = await sql`
-    SELECT id, inquiry_type, contact_name, phone, email, preferred_contact,
+    SELECT id, customer_id, inquiry_type, contact_name, phone, email, preferred_contact,
            message, status, created_at
     FROM customer_inquiries
     WHERE organization_id = ${actor.organization_id}::uuid
@@ -83,7 +84,7 @@ export default async function InquiriesPage({
           </div>
           <SignOutButton />
         </header>
-        {params.updated === "1" && <p className="authSuccess" role="status">Status permintaan berhasil diperbarui dan dicatat dalam audit.</p>}
+        {params.updated === "1" && <p className="authSuccess" role="status">Status permintaan berhasil diperbarui dan dicatat dalam audit.</p>}{params.converted === "1" && <p className="authSuccess" role="status">Permintaan berhasil dihubungkan dengan master pelanggan.</p>}{params.error === "convert" && <p className="authError" role="alert">Konversi tidak dapat dilakukan. Permintaan mungkin sudah ditautkan, ditutup, atau tidak lagi tersedia.</p>}
         {params.error && <p className="authError" role="alert">Perubahan tidak dapat diproses. Muat ulang dan periksa kembali permintaan.</p>}
         <div className="metricGrid inquiryMetrics">
           <article className="metric"><span>Total ditampilkan</span><strong>{rows.length}</strong><small>Maksimal 100 permintaan terbaru</small></article>
@@ -113,14 +114,34 @@ export default async function InquiriesPage({
                   {row.email && <a href={`mailto:${row.email}`}>{row.email}</a>}
                   <small>Preferensi: {row.preferred_contact === "whatsapp" ? "WhatsApp" : row.preferred_contact === "phone" ? "Telepon" : "Email"}</small>
                 </div>
-                <form action={updateInquiryStatus} className="inquiryStatusForm">
-                  <input type="hidden" name="inquiry_id" value={row.id} />
-                  <label htmlFor={`status-${row.id}`}>Perbarui status</label>
-                  <select id={`status-${row.id}`} name="status" defaultValue={row.status}>
-                    {statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
-                  </select>
-                  <button type="submit" className="primary">Simpan</button>
-                </form>
+                {row.customer_id ? (
+                  <p className="inquiryConverted">Terhubung dengan master pelanggan · <Link href="/workspace/customers">Lihat pelanggan ↗</Link></p>
+                ) : (
+                  <>
+                    {!["closed", "spam"].includes(row.status) && (
+                      <form action={convertInquiryToCustomer} className="inquiryConvertForm">
+                        <input type="hidden" name="inquiry_id" value={row.id} />
+                        <label htmlFor={`customer-type-${row.id}`}>Konversi ke pelanggan</label>
+                        <select id={`customer-type-${row.id}`} name="customer_type" defaultValue={row.inquiry_type === "partnership" ? "reseller" : "retail"}>
+                          <option value="retail">Pelanggan umum</option>
+                          <option value="wholesale">Grosir</option>
+                          <option value="reseller">Reseller</option>
+                          <option value="distributor">Distributor</option>
+                          <option value="institutional">Institusi</option>
+                        </select>
+                        <button type="submit" className="primary">Buat / tautkan pelanggan</button>
+                      </form>
+                    )}
+                    <form action={updateInquiryStatus} className="inquiryStatusForm">
+                      <input type="hidden" name="inquiry_id" value={row.id} />
+                      <label htmlFor={`status-${row.id}`}>Perbarui status</label>
+                      <select id={`status-${row.id}`} name="status" defaultValue={row.status}>
+                        {statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
+                      </select>
+                      <button type="submit" className="primary">Simpan</button>
+                    </form>
+                  </>
+                )}
               </article>
             ))}
           </div>
