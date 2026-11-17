@@ -10,10 +10,20 @@ export async function createProduct(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const productType = String(formData.get("product_type") ?? "");
+  const baseUnitId = String(formData.get("base_unit_id") ?? "");
+  const netContentRaw = String(formData.get("net_content_ml") ?? "").trim();
+  const shelfLifeRaw = String(formData.get("shelf_life_days") ?? "").trim();
+  const netContent = netContentRaw ? Number(netContentRaw) : null;
+  const shelfLife = shelfLifeRaw ? Number(shelfLifeRaw) : null;
   const isSellable = formData.get("is_sellable") === "on";
   const isPurchasable = formData.get("is_purchasable") === "on";
+  const isReturnablePackaging = formData.get("is_returnable_packaging") === "on";
 
-  if (!/^[A-Z0-9][A-Z0-9._/-]{1,39}$/.test(sku) || name.length < 2 || name.length > 160 || description.length > 1000 || !allowedTypes.has(productType)) {
+  if (!/^[A-Z0-9][A-Z0-9._/-]{1,39}$/.test(sku) || name.length < 2 || name.length > 160 ||
+      description.length > 1000 || !allowedTypes.has(productType) ||
+      !/^[0-9a-f-]{36}$/i.test(baseUnitId) ||
+      (netContent !== null && (!Number.isInteger(netContent) || netContent <= 0 || netContent > 1000000)) ||
+      (shelfLife !== null && (!Number.isInteger(shelfLife) || shelfLife <= 0 || shelfLife > 3650))) {
     redirect("/workspace/products?error=invalid");
   }
 
@@ -36,18 +46,25 @@ export async function createProduct(formData: FormData) {
   if (!actor) redirect("/workspace?access=denied");
 
   try {
-    await sql`
-      WITH created AS (
+    const created = await sql`
+      WITH valid_unit AS (
+        SELECT id FROM units_of_measure
+        WHERE id = ${baseUnitId}::uuid
+          AND organization_id = ${actor.organization_id}::uuid
+      ),
+      created AS (
         INSERT INTO products (
-          organization_id, sku, name, description, product_type,
+          organization_id, sku, name, description, product_type, base_unit_id,
+          net_content_ml, shelf_life_days, is_returnable_packaging,
           is_sellable, is_purchasable, is_active
         )
-        VALUES (
+        SELECT
           ${actor.organization_id}::uuid, ${sku}, ${name},
-          ${description || null}, ${productType},
+          ${description || null}, ${productType}, valid_unit.id,
+          ${netContent}, ${shelfLife}, ${isReturnablePackaging},
           ${isSellable}, ${isPurchasable}, true
-        )
-        RETURNING id, organization_id, sku, name, product_type
+        FROM valid_unit
+        RETURNING id, organization_id, sku, name, product_type, base_unit_id
       ),
       logged AS (
         INSERT INTO audit_logs (
@@ -57,16 +74,17 @@ export async function createProduct(formData: FormData) {
           created.organization_id, ${actor.actor_id}::uuid, 'CREATE',
           'product', created.id::text,
           jsonb_build_object(
-            'sku', created.sku,
-            'name', created.name,
-            'product_type', created.product_type
+            'sku', created.sku, 'name', created.name,
+            'product_type', created.product_type, 'base_unit_id', created.base_unit_id
           )
         FROM created
         RETURNING id
       )
-      SELECT created.id FROM created
+      SELECT id FROM created
     `;
-  } catch {
+    if (created.length === 0) redirect("/workspace/products?error=unit");
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) throw error;
     redirect("/workspace/products?error=save");
   }
 
