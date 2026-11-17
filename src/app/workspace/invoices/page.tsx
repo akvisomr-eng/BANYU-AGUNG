@@ -51,8 +51,8 @@ export default async function InvoicesPage({searchParams}:{searchParams:Promise<
       </aside>
       <section className="workMain">
         <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / FINANCE</p><h1>Invoices / Piutang</h1><p className="muted">Invoice dibuat dari pesanan yang sudah dikonfirmasi terkirim · {actor.role_name}</p></div><SignOutButton /></header>
-        {params.created==="1" && <p className="authSuccess" role="status">Invoice draft berhasil dibuat. Belum diposting ke jurnal akuntansi.</p>}
-        {params.posted==="1" && <p className="authSuccess" role="status">Invoice berhasil diposting dan siap diproses pada tahap pembayaran.</p>}
+        {params.created==="1" && <p className="authSuccess" role="status">Invoice draft berhasil dibuat. Posting akan membuat jurnal piutang, pendapatan, dan pajak sesuai pemetaan akun.</p>}
+        {params.posted==="1" && <p className="authSuccess" role="status">Invoice berhasil diposting bersama jurnal piutang, pendapatan, dan pajak.</p>}
         {params.error && <p className="authError" role="alert">{params.error==="invalid" ? "Tanggal jatuh tempo atau referensi pesanan tidak valid." : params.error==="order" ? "Invoice hanya dapat dibuat satu kali dari sales order berstatus delivered." : "Invoice tidak dapat diposting. Pastikan status masih draft dan hak akses sesuai."}</p>}
         <div className="metricGrid">
           <article className="metric"><span>Invoice tercatat</span><strong>{invoices.length}</strong><small>Maksimal 100 terbaru</small></article>
@@ -68,7 +68,7 @@ export default async function InvoicesPage({searchParams}:{searchParams:Promise<
         {invoices.length===0 ? <article className="moduleCard"><small>Belum ada invoice.</small></article> :
           <div className="invoiceList">{invoices.map(invoice=><article className="invoiceItem" key={invoice.id}><div><span className="inquiryType">{invoice.invoice_number} · {invoice.status}</span><h3>{invoice.customer_name}</h3><small>{invoice.sales_order_number??"Invoice manual"} · Tanggal {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(invoice.invoice_date))}{invoice.due_date ? " · Jatuh tempo "+new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(invoice.due_date)) : ""}</small></div><div className="invoiceAmount"><strong>{Number(invoice.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong><small>Terbayar {Number(invoice.paid_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</small></div>{actor.role_code==="OWNER" && invoice.status==="draft" && <form action={postInvoice}><input type="hidden" name="invoice_id" value={invoice.id}/><button className="primary" type="submit">Posting invoice</button></form>}</article>)}</div>
         }
-        <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Posting invoice belum membuat jurnal otomatis atau mencatat pembayaran.</p>
+        <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Posting invoice membuat jurnal otomatis setelah pemetaan akun tersedia. Penerimaan pelanggan masih memerlukan modul pembayaran AR.</p>
       </section>
     </main>
   );
