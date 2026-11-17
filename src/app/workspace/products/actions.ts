@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { sql } from "@/lib/db";
 
 const allowedTypes = new Set(["finished_good", "raw_material", "packaging", "spare_part", "service"]);
 
@@ -20,6 +19,7 @@ export async function createProduct(formData: FormData) {
 
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
+  const { sql } = await import("@/lib/db");
 
   const actors = await sql`
     SELECT p.id AS actor_id, p.organization_id
