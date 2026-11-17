@@ -93,3 +93,43 @@ export async function createPurchaseOrder(formData: FormData) {
   }
   redirect("/workspace/purchase-orders?created=1");
 }
+
+"use server";
+
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/server";
+
+export async function approvePurchaseOrder(formData: FormData) {
+  const id = String(formData.get("purchase_order_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) redirect("/workspace/purchase-orders?error=approval");
+
+  const { data: session } = await auth.getSession();
+  if (!session?.user) redirect("/auth/sign-in");
+  const { sql } = await import("@/lib/db");
+
+  const result = await sql`
+    WITH actor AS (
+      SELECT p.id AS actor_id,p.organization_id
+      FROM user_profiles p
+      JOIN user_role_assignments a ON a.user_id=p.id
+      JOIN roles r ON r.id=a.role_id
+      WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code='OWNER'
+      LIMIT 1
+    ),
+    updated AS (
+      UPDATE purchase_orders po
+      SET status='approved',approved_by=actor.actor_id
+      FROM actor
+      WHERE po.id=${id}::uuid AND po.organization_id=actor.organization_id AND po.status='draft'
+      RETURNING po.id,po.organization_id,po.po_number,actor.actor_id
+    ),
+    logged AS (
+      INSERT INTO audit_logs (organization_id,actor_user_id,action,entity_type,entity_id,after_data)
+      SELECT organization_id,actor_id,'APPROVE','purchase_order',id::text,jsonb_build_object('po_number',po_number,'status','approved')
+      FROM updated RETURNING id
+    )
+    SELECT id FROM updated
+  `;
+  if (result.length===0) redirect("/workspace/purchase-orders?error=approval");
+  redirect("/workspace/purchase-orders?approved=1");
+}
