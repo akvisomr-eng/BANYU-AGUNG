@@ -5,7 +5,7 @@ import { sql } from "@/lib/db";
 import { SignOutButton } from "./sign-out-button";
 
 const modules = [
-  ["Sales & CRM","Pelanggan, penawaran, pesanan"],["Production","Rencana, batch, hasil produksi"],["Quality Control","Sampling, hasil uji, release"],["Inventory","Bahan baku, kemasan, stok"],["Procurement","Supplier, PO, penerimaan"],["Distribution","Pengiriman, armada, retur"],["Finance","Kas, bank, jurnal, AR/AP"],["Human Resources","Karyawan, absensi, payroll"],["Assets & Maintenance","Mesin, kendaraan, perawatan"],["Reports & Analytics","KPI dan laporan manajemen"],["Compliance","Izin, sertifikat, dokumen"],["Administration","Pengguna, peran, audit"]
+  ["Permintaan Pelanggan","Kotak masuk dan tindak lanjut CRM"],["Production","Rencana, batch, hasil produksi"],["Quality Control","Sampling, hasil uji, release"],["Inventory","Bahan baku, kemasan, stok"],["Procurement","Supplier, PO, penerimaan"],["Distribution","Pengiriman, armada, retur"],["Finance","Kas, bank, jurnal, AR/AP"],["Human Resources","Karyawan, absensi, payroll"],["Assets & Maintenance","Mesin, kendaraan, perawatan"],["Reports & Analytics","KPI dan laporan manajemen"],["Compliance","Izin, sertifikat, dokumen"],["Administration","Pengguna, peran, audit"]
 ];
 
 export const dynamic = "force-dynamic";
