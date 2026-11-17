@@ -43,7 +43,7 @@ export default async function WorkspacePage() {
       <div className="notice">Akun Anda telah terautentikasi. Modul transaksi masih dalam tahap aktivasi; angka operasional belum ditampilkan sampai data diverifikasi dan alur transaksi diuji.</div>
       <div className="metricGrid">{[["Penjualan","Belum tersedia","Menunggu aktivasi"],["Produksi","Belum tersedia","Menunggu aktivasi"],["Stok tersedia","Belum tersedia","Menunggu aktivasi"],["Piutang","Belum tersedia","Menunggu aktivasi"]].map(x=><article className="metric" key={x[0]}><span>{x[0]}</span><strong className="metricText">{x[1]}</strong><small>{x[2]}</small></article>)}</div>
       <h2 id="modul">Modul perusahaan</h2>
-      <div className="moduleGrid">{modules.map(m=><article className="moduleCard moduleDisabled" key={m[0]}><span className="moduleIcon">◇</span><strong>{m[0]}</strong><small>{m[1]}</small><span className="moduleOpen">Dalam pengembangan</span></article>)}</div>
+      <div className="moduleGrid">{modules.map(m=>m[0] === "Permintaan Pelanggan" ? <Link className="moduleCard" href="/workspace/inquiries" key={m[0]}><span className="moduleIcon">◇</span><strong>{m[0]}</strong><small>{m[1]}</small><span className="moduleOpen">Buka kotak masuk ↗</span></Link> : <article className="moduleCard moduleDisabled" key={m[0]}><span className="moduleIcon">◇</span><strong>{m[0]}</strong><small>{m[1]}</small><span className="moduleOpen">Dalam pengembangan</span></article>)}</div>
       <p className="workspaceFoot">Masuk sebagai {profile.email} · Akses dicatat dalam sistem.</p>
     </section>
   </main>;
