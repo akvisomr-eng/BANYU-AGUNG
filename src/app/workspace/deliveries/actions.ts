@@ -33,7 +33,7 @@ export async function createDelivery(formData:FormData) {
       FROM sales_orders so
       WHERE so.id=${salesOrderId}::uuid AND so.organization_id=${row.organization_id}::uuid
         AND so.status='approved'
-        AND NOT EXISTS (SELECT 1 FROM deliveries d WHERE d.sales_order_id=so.id AND d.status NOT IN ('failed','returned'))
+        AND NOT EXISTS (SELECT 1 FROM deliveries d WHERE d.sales_order_id=so.id)
     ),
     allocation_totals AS (
       SELECT sales_order_item_id,sum(quantity_reserved) AS reserved_qty
