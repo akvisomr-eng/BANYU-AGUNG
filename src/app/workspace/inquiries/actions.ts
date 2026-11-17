@@ -59,13 +59,13 @@ export async function convertInquiryToCustomer(formData: FormData) {
   if (!session?.user) redirect("/auth/sign-in");
   const { sql } = await import("@/lib/db");
 
-  const result = await sql\`
+  const result = await sql`
     WITH actor AS (
       SELECT p.id AS actor_id, p.organization_id
       FROM user_profiles p
       JOIN user_role_assignments a ON a.user_id = p.id
       JOIN roles r ON r.id = a.role_id
-      WHERE p.auth_subject = \${session.user.id}
+      WHERE p.auth_subject = ${session.user.id}
         AND p.status = 'active'
         AND r.code IN ('OWNER', 'ADMIN')
       ORDER BY r.code
@@ -75,7 +75,7 @@ export async function convertInquiryToCustomer(formData: FormData) {
       SELECT i.id, i.organization_id, i.contact_name, i.phone, i.email
       FROM customer_inquiries i
       JOIN actor ON actor.organization_id = i.organization_id
-      WHERE i.id = \${inquiryId}::uuid
+      WHERE i.id = ${inquiryId}::uuid
         AND i.customer_id IS NULL
         AND i.status NOT IN ('closed', 'spam', 'converted')
       FOR UPDATE OF i
@@ -99,7 +99,7 @@ export async function convertInquiryToCustomer(formData: FormData) {
       SELECT
         s.organization_id,
         'CUST-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10)),
-        \${customerType}, s.contact_name, s.phone, s.email
+        ${customerType}, s.contact_name, s.phone, s.email
       FROM source s
       WHERE NOT EXISTS (SELECT 1 FROM matched)
       RETURNING id, organization_id
@@ -133,7 +133,7 @@ export async function convertInquiryToCustomer(formData: FormData) {
       RETURNING id
     )
     SELECT customer_id FROM updated
-  \`;
+  `;
 
   if (result.length === 0) redirect("/workspace/inquiries?error=convert");
   redirect("/workspace/inquiries?converted=1");
