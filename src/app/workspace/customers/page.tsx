@@ -80,7 +80,7 @@ export default async function CustomersPage({
 
         {params.created === "1" && <p className="authSuccess" role="status">Pelanggan berhasil disimpan dan dicatat dalam audit.</p>}
         {params.error === "invalid" && <p className="authError" role="alert">Periksa kembali nama, nomor telepon, dan klasifikasi pelanggan.</p>}
-        {params.error === "save" && <p className="authError" role="alert">Data pelanggan tidak dapat disimpan. Periksa kembali dan coba lagi.</p>}
+        {params.error === "save" && <p className="authError" role="alert">Data pelanggan tidak dapat disimpan. Periksa kembali dan coba lagi.</p>}{params.error === "duplicate" && <p className="authError" role="alert">Pelanggan dengan nomor telepon atau email tersebut sudah terdaftar.</p>}
 
         <div className="metricGrid">
           <article className="metric"><span>Total pelanggan</span><strong>{rows.length}</strong><small>Maksimal 100 data terbaru ditampilkan</small></article>
