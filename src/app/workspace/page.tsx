@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { sql } from "@/lib/db";
 import { SignOutButton } from "./sign-out-button";
 
 const modules = [
@@ -13,6 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function WorkspacePage() {
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
+  const { sql } = await import("@/lib/db");
 
   const rows = await sql`
     SELECT p.full_name, p.email, r.name AS role_name
