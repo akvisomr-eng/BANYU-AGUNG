@@ -8,6 +8,20 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: banyu_agung_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d banyu_agung_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,3 +37,18 @@ jobs:
           NEON_AUTH_BASE_URL: https://example.neon.tech
           NEON_AUTH_COOKIE_SECRET: ci-only-placeholder-secret-not-for-production-32chars
           DATABASE_URL: postgresql://ci:ci@ep-ci-only.us-east-1.aws.neon.tech/ci?sslmode=require
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Apply migration chain to disposable PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          for migration in $(find database/migrations -maxdepth 1 -type f -name '*.sql' | sort); do
+            echo "Applying $migration"
+            psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: Verify finance and payables invariants
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/migration_regressions.sql
