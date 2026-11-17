@@ -35,7 +35,7 @@ const statusLabels: Record<string, string> = {
 export default async function InquiriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ updated?: string; error?: string }>;
+  searchParams: Promise<{ updated?: string; converted?: string; error?: string }>;
 }) {
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
