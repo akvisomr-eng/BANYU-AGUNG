@@ -3,15 +3,15 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 
-async function getActor(roles: string[]) {
+async function getActor() {
   const {data:session}=await auth.getSession();
   if(!session?.user) redirect("/auth/sign-in");
   const {sql}=await import("@/lib/db");
   const actor=await sql`
     SELECT p.id AS actor_id,p.organization_id,r.code AS role_code
     FROM user_profiles p JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id
-    WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code=ANY(${roles}::text[])
-    ORDER BY r.code LIMIT 1
+    WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code IN ('OWNER','ADMIN')
+    ORDER BY CASE WHEN r.code='OWNER' THEN 0 ELSE 1 END LIMIT 1
   `;
   const row=actor[0] as {actor_id:string;organization_id:string;role_code:string}|undefined;
   if(!row) redirect("/workspace?access=denied");
@@ -26,7 +26,7 @@ export async function createDelivery(formData:FormData) {
   const notes=String(formData.get("notes")??"").trim();
   if(!/^[0-9a-f-]{36}$/i.test(salesOrderId) || (plannedDate&&!/^\d{4}-\d{2}-\d{2}$/.test(plannedDate)) ||
     vehicle.length>24 || driver.length>120 || notes.length>1000) redirect("/workspace/deliveries?error=invalid");
-  const {row,sql}=await getActor(["OWNER","ADMIN"]);
+  const {row,sql}=await getActor();
   const result=await sql`
     WITH order_context AS (
       SELECT so.id,so.organization_id,so.order_number,${row.actor_id}::uuid AS actor_id
