@@ -32,7 +32,7 @@ export default async function InventoryOpeningBalancesPage({
   `;
   const actor = actors[0] as { organization_id: string; role_code: string } | undefined;
   if (!actor) redirect("/workspace?access=denied");
-  const [rows,configRows] = await Promise.all([
+  const [rowsResult,configRows] = await Promise.all([
     sql`
       SELECT c.lot_id,p.sku,p.name AS product_name,l.lot_code,
         c.quantity_on_hand,
@@ -48,10 +48,11 @@ export default async function InventoryOpeningBalancesPage({
         AND c.opening_balance_pending=true
       GROUP BY c.lot_id,p.sku,p.name,l.lot_code,c.quantity_on_hand,c.carrying_value
       ORDER BY p.name,l.lot_code
-    ` as OpeningLot[],
+    `,
     sql`SELECT inventory_opening_equity_id FROM accounting_config
       WHERE organization_id=${actor.organization_id}::uuid`
   ]);
+  const rows = rowsResult as unknown as OpeningLot[];
   const params = await searchParams;
   const mappingReady = Boolean(configRows[0]?.inventory_opening_equity_id);
 
