@@ -72,7 +72,7 @@ export default async function InventoryPage() {
         <h2>Saldo stok</h2>
         {balances.length===0 ? <article className="moduleCard"><strong>Belum ada saldo stok</strong><small>Stok akan muncul setelah purchase order disetujui dan penerimaan barang diposting.</small><Link className="moduleOpen" href="/workspace/purchase-orders">Buka purchase orders ↗</Link></article> :
           <div className="inventoryTableWrap"><table className="inventoryTable"><thead><tr><th>Produk / Lot</th><th>Gudang</th><th>On hand</th><th>Reserved</th><th>Siap tersedia</th><th>Status mutu</th><th>Kedaluwarsa</th></tr></thead><tbody>
-            {balances.map((row,i)=><tr key={row.warehouse_code+row.sku+(row.lot_code??"")}>
+            {balances.map((row)=><tr key={row.warehouse_code+row.sku+(row.lot_code??"")}>
               <td><b>{row.sku}</b><small>{row.product_name} · {row.lot_code ?? "Tanpa lot"} · {row.unit_code ?? "Satuan belum diisi"}</small></td>
               <td>{row.warehouse_code}<small>{row.warehouse_name}</small></td>
               <td>{Number(row.quantity_on_hand).toLocaleString("id-ID")}</td>
