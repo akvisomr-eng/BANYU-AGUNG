@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 type Supplier={id:string;supplier_code:string;name:string};
 type Site={id:string;code:string;name:string};
 type Product={id:string;sku:string;name:string;unit_code:string|null};
+type PurchaseOrder={po_number:string;order_date:string;expected_date:string|null;status:string;total_amount:string|number;supplier_name:string;site_name:string};
 
 export default async function PurchaseOrdersPage({searchParams}:{searchParams:Promise<{created?:string;error?:string}>}) {
   const {data:session}=await auth.getSession();
@@ -34,6 +35,7 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
     FROM purchase_orders po JOIN suppliers sup ON sup.id=po.supplier_id JOIN sites site ON site.id=po.site_id
     WHERE po.organization_id=${actor.organization_id}::uuid ORDER BY po.created_at DESC LIMIT 100
   `;
+  const typedOrders = orders as PurchaseOrder[];
   const params=await searchParams;
   const ready=suppliers.length>0&&sites.length>0&&products.length>0;
 
@@ -54,7 +56,7 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
         {params.created==="1" && <p className="authSuccess" role="status">Purchase order draft berhasil dibuat. Stok belum bertambah sampai penerimaan barang dicatat.</p>}
         {params.error && <p className="authError" role="alert">{params.error==="invalid" ? "Periksa pemasok, lokasi, tanggal, dan rincian pembelian." : params.error==="master" ? "Pemasok, lokasi, atau produk tidak aktif/tidak cocok dengan organisasi." : "Purchase order tidak dapat disimpan. Periksa kembali data dan coba lagi."}</p>}
         <div className="metricGrid">
-          <article className="metric"><span>Total purchase order</span><strong>{orders.length}</strong><small>Maksimal 100 terbaru</small></article>
+          <article className="metric"><span>Total purchase order</span><strong>{typedOrders.length}</strong><small>Maksimal 100 terbaru</small></article>
           <article className="metric"><span>Pemasok aktif</span><strong>{suppliers.length}</strong><small>Master pemasok</small></article>
           <article className="metric"><span>Produk dapat dibeli</span><strong>{products.length}</strong><small>Master produk aktif</small></article>
           <article className="metric"><span>Status awal</span><strong className="metricText">DRAFT</strong><small>Perlu persetujuan terpisah</small></article>
@@ -83,8 +85,8 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
           )}
         </section>
         <h2>Daftar purchase order</h2>
-        {orders.length===0 ? <article className="moduleCard"><strong>Belum ada purchase order</strong><small>PO pertama akan muncul setelah master data dan penawaran pemasok tersedia.</small></article> :
-          <div className="orderList">{orders.map((o:any)=><article className="orderItem" key={o.po_number}><div><span className="inquiryType">{o.po_number} · {o.status}</span><h3>{o.supplier_name}</h3><small>{o.site_name} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.order_date))}{o.expected_date ? ` · Tiba ${new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.expected_date))}` : ""}</small></div><strong>{Number(o.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong></article>)}</div>
+        {typedOrders.length===0 ? <article className="moduleCard"><strong>Belum ada purchase order</strong><small>PO pertama akan muncul setelah master data dan penawaran pemasok tersedia.</small></article> :
+          <div className="orderList">{typedOrders.map((o)=><article className="orderItem" key={o.po_number}><div><span className="inquiryType">{o.po_number} · {o.status}</span><h3>{o.supplier_name}</h3><small>{o.site_name} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.order_date))}{o.expected_date ? ` · Tiba ${new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(o.expected_date))}` : ""}</small></div><strong>{Number(o.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong></article>)}</div>
         }
         <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Stok bertambah hanya melalui proses penerimaan barang.</p>
       </section>
