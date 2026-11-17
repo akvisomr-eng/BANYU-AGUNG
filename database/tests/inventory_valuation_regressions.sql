@@ -11,6 +11,7 @@ DECLARE
   po_item_id uuid := gen_random_uuid();
   gr_id uuid := gen_random_uuid();
   bill_id uuid := gen_random_uuid();
+  actor_id uuid := gen_random_uuid();
   inv_account uuid := gen_random_uuid();
   grni_account uuid := gen_random_uuid();
   cogs_account uuid := gen_random_uuid();
@@ -27,6 +28,8 @@ DECLARE
   observed_cost numeric(18,2);
 BEGIN
   INSERT INTO organizations(id,legal_name) VALUES(org_id,'Inventory Valuation Regression');
+  INSERT INTO user_profiles(id,organization_id,auth_subject,full_name,email,status)
+  VALUES(actor_id,org_id,'inventory-qa-actor','Inventory QA Actor','inventory-qa@example.test','active');
   INSERT INTO sites(id,organization_id,code,name,site_type) VALUES(site_id,org_id,'QA','QA Site','warehouse');
   INSERT INTO warehouses(id,organization_id,site_id,code,name,warehouse_type)
   VALUES(warehouse_id,org_id,site_id,'FG','Finished Goods','finished_goods');
@@ -80,7 +83,7 @@ BEGIN
   INSERT INTO supplier_bills(id,organization_id,supplier_id,purchase_order_id,supplier_invoice_number,
     invoice_date,subtotal,tax_amount,total_amount)
   VALUES(bill_id,org_id,supplier_id,po_id,'INV-QA-001',CURRENT_DATE,1000,110,1110);
-  UPDATE supplier_bills SET status='posted' WHERE id=bill_id;
+  UPDATE supplier_bills SET status='posted',posted_by=actor_id WHERE id=bill_id;
   IF NOT EXISTS(SELECT 1 FROM inventory_grni_applications WHERE supplier_bill_id=bill_id
     AND goods_receipt_id=gr_id AND amount=1000) THEN
     RAISE EXCEPTION 'PO supplier bill did not allocate received GR/IR value';
