@@ -25,7 +25,7 @@ export async function createCustomer(formData: FormData) {
   const { sql } = await import("@/lib/db");
 
   try {
-    const created = await sql`
+    const result = await sql`
       WITH actor AS (
         SELECT p.id AS actor_id, p.organization_id
         FROM user_profiles p
@@ -35,6 +35,18 @@ export async function createCustomer(formData: FormData) {
           AND p.status = 'active'
           AND r.code IN ('OWNER', 'ADMIN')
         ORDER BY r.code
+        LIMIT 1
+      ),
+      existing AS (
+        SELECT c.id
+        FROM customers c
+        JOIN actor ON actor.organization_id = c.organization_id
+        WHERE regexp_replace(coalesce(c.phone, ''), '[^0-9]', '', 'g') =
+                regexp_replace(${parsed.data.phone}, '[^0-9]', '', 'g')
+           OR (
+             ${parsed.data.email || null}::text IS NOT NULL
+             AND lower(c.email) = lower(${parsed.data.email || null}::text)
+           )
         LIMIT 1
       ),
       inserted AS (
@@ -47,6 +59,7 @@ export async function createCustomer(formData: FormData) {
           ${parsed.data.customer_type}, ${parsed.data.name},
           ${parsed.data.phone}, ${parsed.data.email || null}
         FROM actor
+        WHERE NOT EXISTS (SELECT 1 FROM existing)
         RETURNING id, organization_id, customer_code, name, customer_type
       ),
       logged AS (
@@ -65,9 +78,16 @@ export async function createCustomer(formData: FormData) {
         CROSS JOIN actor
         RETURNING id
       )
-      SELECT id FROM inserted
+      SELECT
+        (SELECT actor_id FROM actor LIMIT 1) AS actor_id,
+        (SELECT id FROM existing LIMIT 1) AS existing_id,
+        (SELECT id FROM inserted LIMIT 1) AS id
     `;
-    if (created.length === 0) redirect("/workspace?access=denied");
+
+    const outcome = result[0] as { actor_id: string | null; existing_id: string | null; id: string | null } | undefined;
+    if (!outcome?.actor_id) redirect("/workspace?access=denied");
+    if (outcome.existing_id) redirect("/workspace/customers?error=duplicate");
+    if (!outcome.id) redirect("/workspace/customers?error=save");
   } catch (error) {
     if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) throw error;
     redirect("/workspace/customers?error=save");
