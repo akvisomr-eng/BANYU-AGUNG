@@ -10,6 +10,7 @@ DECLARE
   po_id uuid := gen_random_uuid();
   po_item_id uuid := gen_random_uuid();
   gr_id uuid := gen_random_uuid();
+  gr2_id uuid := gen_random_uuid();
   bill_id uuid := gen_random_uuid();
   actor_id uuid := gen_random_uuid();
   inv_account uuid := gen_random_uuid();
@@ -98,26 +99,64 @@ BEGIN
     RAISE EXCEPTION 'Matched PO bill was incorrectly debited to purchase expense';
   END IF;
 
+  INSERT INTO goods_receipts(id,organization_id,receipt_number,purchase_order_id,warehouse_id,status)
+  VALUES(gr2_id,org_id,'GR-QA-002',po_id,warehouse_id,'posted');
+  INSERT INTO goods_receipt_items(goods_receipt_id,purchase_order_item_id,product_id,lot_id,quantity_received,unit_cost,line_total)
+  VALUES(gr2_id,po_item_id,v_product_id,v_lot_id,10,120,1200);
+  INSERT INTO stock_movements(organization_id,movement_no,movement_type,warehouse_id,product_id,lot_id,
+    quantity,unit_cost,reference_type,reference_id)
+  VALUES(org_id,'MOV-QA-GR-002','receipt',warehouse_id,v_product_id,v_lot_id,10,120,'goods_receipt',gr2_id);
+  SELECT quantity_on_hand,carrying_value INTO observed_qty,observed_cost
+  FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=v_product_id AND lot_id=v_lot_id;
+  IF observed_qty<>20 OR observed_cost<>2200 THEN
+    RAISE EXCEPTION 'Second receipt did not recalculate weighted lot value: qty %, value %',observed_qty,observed_cost;
+  END IF;
+
   INSERT INTO stock_movements(organization_id,movement_no,movement_type,warehouse_id,product_id,lot_id,
     quantity,unit_cost,reference_type,reference_id)
   VALUES(org_id,'MOV-QA-DSP-001','sales_pick',warehouse_id,v_product_id,v_lot_id,4,999,'delivery',gen_random_uuid());
   SELECT quantity_on_hand,carrying_value INTO observed_qty,observed_cost
   FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=product_id AND lot_id=lot_id;
-  IF observed_qty<>6 OR observed_cost<>600 THEN
+  IF observed_qty<>16 OR observed_cost<>1760 THEN
     RAISE EXCEPTION 'Sales pick did not consume weighted lot cost: qty %, value %',observed_qty,observed_cost;
   END IF;
   IF NOT EXISTS(SELECT 1 FROM journal_entries WHERE organization_id=org_id
-    AND source_module='inventory_cogs' AND status='posted' AND total_debit=400 AND total_credit=400) THEN
+    AND source_module='inventory_cogs' AND status='posted' AND total_debit=440 AND total_credit=440) THEN
     RAISE EXCEPTION 'Sales pick did not post correct COGS journal';
   END IF;
 
   BEGIN
     INSERT INTO stock_movements(organization_id,movement_no,movement_type,warehouse_id,product_id,lot_id,
       quantity,unit_cost,reference_type,reference_id)
-    VALUES(org_id,'MOV-QA-DSP-OVER','sales_pick',warehouse_id,v_product_id,v_lot_id,7,0,'delivery',gen_random_uuid());
+    VALUES(org_id,'MOV-QA-DSP-OVER','sales_pick',warehouse_id,v_product_id,v_lot_id,17,0,'delivery',gen_random_uuid());
     RAISE EXCEPTION 'Oversized lot issue was unexpectedly accepted';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM='Oversized lot issue was unexpectedly accepted' THEN RAISE; END IF;
     IF SQLERRM NOT LIKE 'Saldo valuasi lot tidak mencukupi%' THEN RAISE; END IF;
   END;
-END $$;
+
+  BEGIN
+    UPDATE inventory_lot_costs SET carrying_value=0
+    WHERE organization_id=org_id AND product_id=v_product_id AND lot_id=v_lot_id;
+    RAISE EXCEPTION 'Direct lot cost mutation was unexpectedly accepted';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM='Direct lot cost mutation was unexpectedly accepted' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Saldo valuasi lot hanya boleh berubah%' THEN RAISE; END IF;
+  END;
+  BEGIN
+    UPDATE inventory_valuation_entries SET total_value=0
+    WHERE movement_id=(SELECT movement_id FROM inventory_valuation_entries
+      WHERE organization_id=org_id AND movement_type='receipt' LIMIT 1);
+    RAISE EXCEPTION 'Inventory valuation ledger mutation was unexpectedly accepted';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM='Inventory valuation ledger mutation was unexpectedly accepted' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Subledger persediaan tidak dapat diubah%' THEN RAISE; END IF;
+  END;
+  BEGIN
+    UPDATE inventory_grni_applications SET amount=1 WHERE supplier_bill_id=bill_id;
+    RAISE EXCEPTION 'GR/IR application mutation was unexpectedly accepted';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM='GR/IR application mutation was unexpectedly accepted' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Subledger persediaan tidak dapat diubah%' THEN RAISE; END IF;
+  END;
+END $;
