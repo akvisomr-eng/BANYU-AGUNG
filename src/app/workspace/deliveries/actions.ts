@@ -86,7 +86,7 @@ export async function dispatchDelivery(formData:FormData) {
   if(!/^[0-9a-f-]{36}$/i.test(deliveryId) || vehicle.length<3 || vehicle.length>24 || driver.length<2 || driver.length>120) {
     redirect("/workspace/deliveries?error=dispatch_invalid");
   }
-  const {row,sql}=await getActor(["OWNER","ADMIN"]);
+  const {row,sql}=await getActor();
   const result=await sql`
     WITH context AS (
       SELECT d.id AS delivery_id,d.organization_id,d.sales_order_id,${row.actor_id}::uuid AS actor_id
@@ -180,7 +180,7 @@ export async function confirmDelivery(formData:FormData) {
   if(!/^[0-9a-f-]{36}$/i.test(deliveryId) || proof.length>1000 || (proof && !/^https:\/\//i.test(proof))) {
     redirect("/workspace/deliveries?error=proof");
   }
-  const {row,sql}=await getActor(["OWNER","ADMIN"]);
+  const {row,sql}=await getActor();
   const result=await sql`
     WITH updated AS (
       UPDATE deliveries d
