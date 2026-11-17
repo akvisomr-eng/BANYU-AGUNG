@@ -240,3 +240,19 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .novemberProductCard:nth-child(3) .novemberProductVisual img{height:180px;width:min(92%,280px)}
 .novemberProductWord{position:relative;z-index:1;padding:4px 9px;border:1px solid #c6a76d;border-radius:999px;background:#f7f3e7;color:#55766b;font-size:7px;letter-spacing:.16em}
 @media(max-width:560px){.novemberHeritageLogo .novemberLogoMark{width:45px;height:45px}.novemberProductVisual{height:225px}.novemberProductVisual img{height:180px}.novemberProductCard:nth-child(2) .novemberProductVisual img{height:190px}}
+
+
+/* Public customer inquiry intake */
+.inquiryCard{max-width:620px}
+.inquiryCard h1{font-size:clamp(34px,5vw,46px);margin:16px 0}
+.inquiryForm select,.inquiryForm textarea{width:100%;border:1px solid #cbd9d3;background:#fbfcfa;padding:14px 13px;font:inherit;font-size:13px;color:#102c35;border-radius:2px}
+.inquiryForm select:focus,.inquiryForm textarea:focus{outline:2px solid #8abbb0;outline-offset:1px}
+.inquiryForm textarea{resize:vertical;line-height:1.6}
+.inquiryConsent{display:grid!important;grid-template-columns:18px 1fr;gap:10px!important;align-items:start;font-weight:400!important;line-height:1.6}
+.inquiryConsent input{width:16px!important;height:16px;margin:2px 0 0}
+.inquiryHoneypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+.inquiryPrivacy{font-size:10px;line-height:1.7;color:#82928e;margin-top:18px}
+.inquiryCard .authFoot a{color:#176b70}
+.novemberContactRequest{display:inline-block;margin:12px 0 8px;padding:12px 15px;background:#e8f4f9;color:#174b68!important;font-size:12px;font-weight:700;text-decoration:none}
+.novemberContactRequest:hover{background:#d5eaf4}
+@media(max-width:520px){.inquiryCard{padding:28px 22px}.inquiryCard h1{font-size:34px}}
