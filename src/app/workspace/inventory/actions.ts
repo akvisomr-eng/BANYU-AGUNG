@@ -27,7 +27,7 @@ export async function postInventoryOpeningBalance(formData: FormData) {
   const actor = actors[0] as { actor_id: string; organization_id: string } | undefined;
   if (!actor) redirect("/workspace?access=denied");
 
-  const result = await sql`
+  const inserted = await sql`
     WITH lot AS (
       SELECT c.organization_id,c.product_id,c.lot_id,c.quantity_on_hand,
         sum(ib.quantity_on_hand) AS actual_quantity
@@ -38,16 +38,20 @@ export async function postInventoryOpeningBalance(formData: FormData) {
         AND c.lot_id=${lotId}::uuid AND c.opening_balance_pending=true
       GROUP BY c.organization_id,c.product_id,c.lot_id,c.quantity_on_hand
       HAVING c.quantity_on_hand=sum(ib.quantity_on_hand)
-    ), inserted AS (
-      INSERT INTO inventory_opening_balances (
-        organization_id,product_id,lot_id,quantity,total_value,posted_by
-      )
-      SELECT organization_id,product_id,lot_id,quantity_on_hand,${totalValue},${actor.actor_id}::uuid
-      FROM lot
-      RETURNING id,journal_entry_id
     )
-    SELECT id FROM inserted WHERE journal_entry_id IS NOT NULL
+    INSERT INTO inventory_opening_balances (
+      organization_id,product_id,lot_id,quantity,total_value,posted_by
+    )
+    SELECT organization_id,product_id,lot_id,quantity_on_hand,${totalValue},${actor.actor_id}::uuid
+    FROM lot
+    RETURNING id
   `;
-  if (!result.length) redirect("/workspace/inventory/opening-balances?error=stale");
+  const openingId = inserted[0]?.id as string | undefined;
+  if (!openingId) redirect("/workspace/inventory/opening-balances?error=stale");
+  const posted = await sql`
+    SELECT journal_entry_id FROM inventory_opening_balances
+    WHERE id=${openingId}::uuid AND organization_id=${actor.organization_id}::uuid
+  `;
+  if (!posted[0]?.journal_entry_id) redirect("/workspace/inventory/opening-balances?error=stale");
   redirect("/workspace/inventory/opening-balances?posted=1");
 }
