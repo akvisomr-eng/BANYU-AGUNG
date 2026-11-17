@@ -27,7 +27,7 @@ export default async function DeliveriesPage({searchParams}:{searchParams:Promis
     SELECT so.id,so.order_number,c.name AS customer_name,so.total_amount,so.requested_delivery_date
     FROM sales_orders so JOIN customers c ON c.id=so.customer_id
     WHERE so.organization_id=${actor.organization_id}::uuid AND so.status='approved'
-      AND NOT EXISTS (SELECT 1 FROM deliveries d WHERE d.sales_order_id=so.id AND d.status NOT IN ('failed','returned'))
+      AND NOT EXISTS (SELECT 1 FROM deliveries d WHERE d.sales_order_id=so.id)
       AND EXISTS (SELECT 1 FROM sales_order_allocations a WHERE a.sales_order_id=so.id AND a.status='reserved')
     ORDER BY so.requested_delivery_date NULLS LAST,so.order_date LIMIT 100
   ` as ApprovedOrder[];
