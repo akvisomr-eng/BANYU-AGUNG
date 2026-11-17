@@ -1,4 +1,6 @@
 -- Organization-level account mapping and immutable source-to-ledger posting.
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS invoice_id uuid REFERENCES invoices(id);
+CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id, payment_date DESC);
 CREATE TABLE IF NOT EXISTS accounting_config (
   organization_id uuid PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
   accounts_receivable_id uuid REFERENCES chart_of_accounts(id),
@@ -219,3 +221,113 @@ CREATE TRIGGER trg_post_supplier_payment_to_ledger
 AFTER INSERT OR UPDATE OF status ON payments
 FOR EACH ROW WHEN (NEW.status = 'settled' AND NEW.payment_type = 'supplier_payment')
 EXECUTE FUNCTION post_supplier_payment_to_ledger();
+
+
+CREATE OR REPLACE FUNCTION validate_customer_receipt_payment()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE inv invoices%ROWTYPE;
+BEGIN
+  IF NEW.payment_type = 'customer_receipt' THEN
+    IF NEW.invoice_id IS NULL THEN
+      RAISE EXCEPTION 'Penerimaan pelanggan harus terkait invoice';
+    END IF;
+    SELECT * INTO inv FROM invoices WHERE id = NEW.invoice_id FOR UPDATE;
+    IF NOT FOUND OR inv.organization_id <> NEW.organization_id
+       OR inv.customer_id <> NEW.party_id OR NEW.party_type <> 'customer' THEN
+      RAISE EXCEPTION 'Invoice tidak cocok dengan organisasi atau pelanggan';
+    END IF;
+    IF inv.status NOT IN ('posted','partially_paid') THEN
+      RAISE EXCEPTION 'Invoice harus diposting sebelum menerima pembayaran';
+    END IF;
+    IF NEW.status = 'settled'
+       AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'settled')
+       AND inv.paid_amount + NEW.amount > inv.total_amount THEN
+      RAISE EXCEPTION 'Penerimaan melebihi sisa piutang';
+    END IF;
+  ELSIF NEW.invoice_id IS NOT NULL THEN
+    RAISE EXCEPTION 'Referensi invoice hanya untuk penerimaan pelanggan';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_validate_customer_receipt_payment ON payments;
+CREATE TRIGGER trg_validate_customer_receipt_payment
+BEFORE INSERT OR UPDATE ON payments
+FOR EACH ROW EXECUTE FUNCTION validate_customer_receipt_payment();
+
+CREATE OR REPLACE FUNCTION apply_customer_receipt_payment()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF NEW.payment_type = 'customer_receipt' AND NEW.status = 'settled'
+     AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'settled') THEN
+    UPDATE invoices
+    SET paid_amount = paid_amount + NEW.amount,
+        status = CASE
+          WHEN paid_amount + NEW.amount >= total_amount THEN 'paid'
+          ELSE 'partially_paid'
+        END
+    WHERE id = NEW.invoice_id AND organization_id = NEW.organization_id;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_apply_customer_receipt_payment ON payments;
+CREATE TRIGGER trg_apply_customer_receipt_payment
+AFTER INSERT OR UPDATE OF status, amount ON payments
+FOR EACH ROW EXECUTE FUNCTION apply_customer_receipt_payment();
+
+CREATE OR REPLACE FUNCTION protect_settled_customer_receipt()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.payment_type = 'customer_receipt' AND OLD.status = 'settled' THEN
+    RAISE EXCEPTION 'Penerimaan settled tidak dapat diubah atau dihapus';
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_protect_settled_customer_receipt ON payments;
+CREATE TRIGGER trg_protect_settled_customer_receipt
+BEFORE UPDATE OR DELETE ON payments
+FOR EACH ROW EXECUTE FUNCTION protect_settled_customer_receipt();
+
+CREATE OR REPLACE FUNCTION post_customer_receipt_to_ledger()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE cfg accounting_config%ROWTYPE;
+  inv invoices%ROWTYPE;
+  debit_account uuid;
+  lines jsonb;
+BEGIN
+  IF NEW.payment_type <> 'customer_receipt' THEN RETURN NEW; END IF;
+  IF TG_OP = 'UPDATE' AND OLD.status = 'settled' THEN RETURN NEW; END IF;
+  SELECT * INTO cfg FROM accounting_config WHERE organization_id = NEW.organization_id;
+  SELECT * INTO inv FROM invoices WHERE id = NEW.invoice_id AND organization_id = NEW.organization_id;
+  IF NOT FOUND OR cfg.accounts_receivable_id IS NULL THEN
+    RAISE EXCEPTION 'Pemetaan Piutang wajib diatur sebelum penerimaan pelanggan';
+  END IF;
+  debit_account := CASE
+    WHEN NEW.method IN ('bank_transfer','card','gateway') THEN cfg.bank_account_id
+    WHEN NEW.method = 'cash' THEN cfg.cash_account_id
+    ELSE NULL
+  END;
+  IF debit_account IS NULL THEN
+    RAISE EXCEPTION 'Pemetaan akun Kas/Bank untuk metode penerimaan ini belum diatur';
+  END IF;
+  lines := jsonb_build_array(
+    jsonb_build_object('account_id',debit_account,'description','Penerimaan invoice '||inv.invoice_number,'debit',NEW.amount,'credit',0),
+    jsonb_build_object('account_id',cfg.accounts_receivable_id,'description','Pelunasan piutang '||inv.invoice_number,'debit',0,'credit',NEW.amount)
+  );
+  PERFORM emit_accounting_journal(NEW.organization_id,'customer_receipt',NEW.id,NEW.payment_date,
+    'Penerimaan pelanggan '||NEW.payment_number,lines,NULL);
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_post_customer_receipt_to_ledger ON payments;
+CREATE TRIGGER trg_post_customer_receipt_to_ledger
+AFTER INSERT OR UPDATE OF status ON payments
+FOR EACH ROW WHEN (NEW.status = 'settled' AND NEW.payment_type = 'customer_receipt')
+EXECUTE FUNCTION post_customer_receipt_to_ledger();
