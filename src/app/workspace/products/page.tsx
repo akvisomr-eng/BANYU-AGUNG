@@ -21,6 +21,9 @@ type ProductRow = {
   is_sellable: boolean;
   is_purchasable: boolean;
   is_active: boolean;
+  base_unit_code: string | null;
+  base_unit_name: string | null;
+  net_content_ml: number | null;
   created_at: string;
 };
 
@@ -47,11 +50,17 @@ export default async function ProductsPage({
   const actor = actors[0] as { organization_id: string; role_name: string } | undefined;
   if (!actor) redirect("/workspace?access=denied");
 
+  const units = await sql`
+    SELECT id, code, name, dimension FROM units_of_measure
+    WHERE organization_id = ${actor.organization_id}::uuid ORDER BY name
+  ` as { id: string; code: string; name: string; dimension: string }[];
   const rows = await sql`
-    SELECT sku, name, product_type, is_sellable, is_purchasable, is_active, created_at
-    FROM products
-    WHERE organization_id = ${actor.organization_id}::uuid
-    ORDER BY created_at DESC
+    SELECT p.sku, p.name, p.product_type, p.is_sellable, p.is_purchasable, p.is_active,
+           p.net_content_ml, u.code AS base_unit_code, u.name AS base_unit_name, p.created_at
+    FROM products p
+    LEFT JOIN units_of_measure u ON u.id = p.base_unit_id
+    WHERE p.organization_id = ${actor.organization_id}::uuid
+    ORDER BY p.created_at DESC
     LIMIT 100
   ` as ProductRow[];
   const params = await searchParams;
@@ -63,6 +72,7 @@ export default async function ProductsPage({
         <p className="sideLabel">MASTER DATA</p>
         <Link className="sideLink" href="/workspace">← Ringkasan</Link>
         <Link className="sideActive" href="/workspace/products">Produk & Barang</Link>
+        <Link className="sideLink" href="/workspace/setup">Lokasi, Gudang & Satuan</Link>
         <Link className="sideLink" href="/">Kembali ke Website</Link>
       </aside>
       <section className="workMain">
@@ -77,7 +87,7 @@ export default async function ProductsPage({
 
         {params.created === "1" && <p className="authSuccess" role="status">Produk berhasil disimpan dan tercatat dalam audit.</p>}
         {params.error === "invalid" && <p className="authError" role="alert">Periksa kembali SKU, nama, dan klasifikasi produk.</p>}
-        {params.error === "save" && <p className="authError" role="alert">Produk tidak dapat disimpan. Pastikan SKU belum digunakan dan coba kembali.</p>}
+        {params.error === "save" && <p className="authError" role="alert">Produk tidak dapat disimpan. Pastikan SKU belum digunakan dan coba kembali.</p>}{params.error === "unit" && <p className="authError" role="alert">Satuan dasar tidak valid untuk organisasi ini. Pilih satuan yang terdaftar.</p>}
 
         <div className="metricGrid">
           <article className="metric"><span>Total master produk</span><strong>{rows.length}</strong><small>Maksimal 100 data terbaru ditampilkan</small></article>
@@ -89,6 +99,9 @@ export default async function ProductsPage({
         <section className="metric" style={{ marginBottom: 28 }}>
           <h2 style={{ marginTop: 0 }}>Tambah master produk</h2>
           <p className="muted">Isi berdasarkan katalog dan spesifikasi resmi perusahaan. Belum ada data contoh yang dimasukkan.</p>
+          {units.length === 0 ? (
+            <p className="setupNotice">Daftarkan satuan dasar terlebih dahulu. <Link href="/workspace/setup">Buka konfigurasi operasional ↗</Link></p>
+          ) : (
           <form action={createProduct} className="authForm" style={{ maxWidth: 760 }}>
             <label htmlFor="sku">Kode SKU</label>
             <input id="sku" name="sku" required minLength={2} maxLength={40} pattern="[A-Za-z0-9][A-Za-z0-9._/-]{1,39}" placeholder="Contoh: BA-AIR-600" />
@@ -102,8 +115,20 @@ export default async function ProductsPage({
               <option value="spare_part">Suku cadang</option>
               <option value="service">Jasa</option>
             </select>
+            <label htmlFor="base_unit_id">Satuan dasar</label>
+            <select id="base_unit_id" name="base_unit_id" required defaultValue="">
+              <option value="" disabled>Pilih satuan</option>
+              {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.code} · {unit.name} ({unit.dimension})</option>)}
+            </select>
+            <label htmlFor="net_content_ml">Isi bersih (ml, opsional)</label>
+            <input id="net_content_ml" name="net_content_ml" type="number" min="1" max="1000000" step="1" placeholder="Isi sesuai label resmi" />
+            <label htmlFor="shelf_life_days">Masa simpan (hari, opsional)</label>
+            <input id="shelf_life_days" name="shelf_life_days" type="number" min="1" max="3650" step="1" placeholder="Isi sesuai spesifikasi resmi" />
             <label htmlFor="description">Keterangan (opsional)</label>
             <textarea id="description" name="description" maxLength={1000} rows={3} placeholder="Spesifikasi atau keterangan singkat" />
+            <label style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 400 }}>
+              <input type="checkbox" name="is_returnable_packaging" style={{ width: 16 }} /> Kemasan dapat dikembalikan
+            </label>
             <label style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 400 }}>
               <input type="checkbox" name="is_sellable" style={{ width: 16 }} /> Dapat dijual
             </label>
@@ -112,6 +137,7 @@ export default async function ProductsPage({
             </label>
             <button className="primary authSubmit" type="submit">Simpan master produk</button>
           </form>
+          )}
         </section>
 
         <h2>Daftar produk</h2>
@@ -127,6 +153,7 @@ export default async function ProductsPage({
                 <span className="moduleIcon">{row.is_active ? "◇" : "○"}</span>
                 <strong>{row.name}</strong>
                 <small>{row.sku} · {typeLabels[row.product_type] ?? row.product_type}</small>
+                <small>Satuan: {row.base_unit_code ?? "Belum ditetapkan"}{row.net_content_ml ? ` · ${row.net_content_ml} ml` : ""}</small>
                 <small>{row.is_sellable ? "Dapat dijual" : "Tidak untuk dijual"} · {row.is_purchasable ? "Dapat dibeli" : "Tidak untuk dibeli"}</small>
                 <span className="moduleOpen">{row.is_active ? "Aktif" : "Nonaktif"}</span>
               </article>
