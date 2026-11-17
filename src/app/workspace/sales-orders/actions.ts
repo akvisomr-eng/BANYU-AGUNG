@@ -139,6 +139,7 @@ export async function approveSalesOrder(formData: FormData) {
       JOIN warehouses w ON w.id=ib.warehouse_id
       JOIN order_context oc ON oc.organization_id=ib.organization_id AND oc.site_id=w.site_id
       WHERE ib.quantity_on_hand>ib.quantity_reserved
+        AND (l.expires_at IS NULL OR l.expires_at>=current_date)
       FOR UPDATE OF ib
     ),
     allocation_candidates AS (
