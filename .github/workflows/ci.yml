@@ -56,3 +56,7 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/inventory_valuation_regressions.sql
+      - name: Verify owner inventory opening balance workflow
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/inventory_opening_balance_regressions.sql
