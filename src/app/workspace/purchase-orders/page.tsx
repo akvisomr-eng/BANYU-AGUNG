@@ -29,7 +29,7 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
   const products=await sql`
     SELECT p.id,p.sku,p.name,u.code AS unit_code FROM products p
     LEFT JOIN units_of_measure u ON u.id=p.base_unit_id
-    WHERE p.organization_id=${actor.organization_id}::uuid AND p.is_active=true AND p.is_purchasable=true ORDER BY p.name
+    WHERE p.organization_id=${actor.organization_id}::uuid AND p.is_active=true AND p.is_purchasable=true AND p.product_type<>'service' ORDER BY p.name
   ` as Product[];
   const orders=await sql`
     SELECT po.id,po.site_id,po.po_number,po.order_date,po.expected_date,po.status,po.total_amount,sup.name AS supplier_name,site.name AS site_name
@@ -51,6 +51,8 @@ export default async function PurchaseOrdersPage({searchParams}:{searchParams:Pr
         <Link className="sideLink" href="/workspace/suppliers">Master Pemasok</Link>
         <Link className="sideLink" href="/workspace/products">Produk & Barang</Link>
         <Link className="sideLink" href="/workspace/setup">Konfigurasi Operasional</Link>
+        <Link className="sideLink" href="/workspace/goods-receipts">Goods Receipts</Link>
+        <Link className="sideLink" href="/workspace/inventory">Inventory</Link>
         <Link className="sideLink" href="/">Kembali ke Website</Link>
       </aside>
       <section className="workMain">
