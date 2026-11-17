@@ -242,6 +242,9 @@ BEGIN
       RAISE EXCEPTION 'Pemetaan GR/IR wajib diatur untuk faktur terkait PO';
     END IF;
     remaining_amount := NEW.subtotal;
+    PERFORM 1 FROM goods_receipts
+      WHERE organization_id = NEW.organization_id AND purchase_order_id = NEW.purchase_order_id
+        AND status = 'posted' FOR UPDATE;
     FOR receipt_row IN
       SELECT gr.id, greatest(0, round(sum(gri.line_total),2) -
         COALESCE((SELECT sum(app.amount) FROM inventory_grni_applications app
@@ -255,7 +258,6 @@ BEGIN
         COALESCE((SELECT sum(app.amount) FROM inventory_grni_applications app
           WHERE app.goods_receipt_id = gr.id),0)
       ORDER BY gr.received_at, gr.id
-      FOR UPDATE OF gr
     LOOP
       EXIT WHEN remaining_amount <= 0;
       allocation_amount := least(remaining_amount, receipt_row.available_amount);
