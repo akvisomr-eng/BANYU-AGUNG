@@ -66,7 +66,7 @@ export default async function Home() {
           </Link>
           <nav className="novemberDesktopNav" aria-label="Navigasi utama">
             {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-              {session?.user ? <>{account && <a href="/workspace">Dashboard · {account.role_name}</a>}<a href="/auth/sign-in">Kelola akun / Sign Out</a></> : <Link href="/auth/sign-in">Sign In / Masuk</Link>}
+              {session?.user ? <>{account && <a href="/workspace">Dashboard · {account.role_name}</a>}<SignOutButton /></> : <Link href="/auth/sign-in">Sign In / Masuk</Link>}
           </nav>
           <div className="novemberAccountNav">
             {session?.user ? <>{account ? <><span className="novemberAccountIdentity">{account.full_name} · {account.role_name}</span><Link className="novemberAccountLink" href="/workspace">Dashboard</Link></> : <span className="novemberAccountIdentity">Akun menunggu aktivasi peran</span>}<SignOutButton /></> : <Link className="novemberAccountLink" href="/auth/sign-in">Sign In</Link>}
