@@ -12,6 +12,7 @@ DECLARE
   overpay_bill_id uuid := gen_random_uuid();
   journal_id uuid := gen_random_uuid();
   payment_id uuid;
+  receipt_id uuid;
   cash_account uuid := gen_random_uuid();
   payable_account uuid := gen_random_uuid();
   bank_account uuid := gen_random_uuid();
@@ -58,6 +59,35 @@ BEGIN
     AND source_module = 'invoice' AND source_id = invoice_a AND status = 'posted'
     AND total_debit = 111 AND total_credit = 111) THEN
     RAISE EXCEPTION 'Invoice posting did not create a balanced AR/revenue/tax journal';
+  END IF;
+  INSERT INTO payments (organization_id,payment_number,payment_type,party_type,party_id,
+    invoice_id,payment_date,amount,method,status)
+  VALUES (org_a,'RCV-AR-001','customer_receipt','customer',customer_a,invoice_a,
+    DATE '2026-11-02',40,'bank_transfer','draft') RETURNING id INTO receipt_id;
+  UPDATE payments SET status = 'settled' WHERE id = receipt_id;
+  SELECT paid_amount,status INTO observed,observed_status FROM invoices WHERE id = invoice_a;
+  IF observed <> 40 OR observed_status <> 'partially_paid' THEN
+    RAISE EXCEPTION 'Partial customer receipt regression: paid %, status %', observed, observed_status;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM journal_entries WHERE organization_id = org_a
+    AND source_module = 'customer_receipt' AND source_id = receipt_id AND status = 'posted'
+    AND total_debit = 40 AND total_credit = 40) THEN
+    RAISE EXCEPTION 'Customer receipt did not create a balanced cash/AR journal';
+  END IF;
+  BEGIN
+    UPDATE payments SET reference_number = 'MUTATED' WHERE id = receipt_id;
+    RAISE EXCEPTION 'Settled customer receipt was unexpectedly mutable';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM = 'Settled customer receipt was unexpectedly mutable' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Penerimaan settled tidak dapat diubah%' THEN RAISE; END IF;
+  END;
+  INSERT INTO payments (organization_id,payment_number,payment_type,party_type,party_id,
+    invoice_id,payment_date,amount,method,status)
+  VALUES (org_a,'RCV-AR-002','customer_receipt','customer',customer_a,invoice_a,
+    DATE '2026-11-03',71,'cash','settled');
+  SELECT paid_amount,status INTO observed,observed_status FROM invoices WHERE id = invoice_a;
+  IF observed <> 111 OR observed_status <> 'paid' THEN
+    RAISE EXCEPTION 'Full customer receipt regression: paid %, status %', observed, observed_status;
   END IF;
 
   INSERT INTO supplier_bills (
