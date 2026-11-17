@@ -80,7 +80,7 @@ BEGIN
   SELECT count(*)::int, COALESCE(sum((x->>'debit')::numeric),0),
          COALESCE(sum((x->>'credit')::numeric),0)
     INTO line_count, debit_total, credit_total
-  FROM jsonb_array_elements(p_lines) x;
+  FROM jsonb_array_elements(p_lines) AS elem(value);
 
   IF line_count < 2 OR debit_total <= 0 OR debit_total <> credit_total THEN
     RAISE EXCEPTION 'Jurnal sumber % tidak seimbang atau tidak lengkap', p_module;
@@ -88,8 +88,8 @@ BEGIN
 
   IF EXISTS (
     SELECT 1
-    FROM jsonb_array_elements(p_lines) x
-    LEFT JOIN chart_of_accounts a ON a.id = (x->>'account_id')::uuid
+    FROM jsonb_array_elements(p_lines) AS elem(value)
+    LEFT JOIN chart_of_accounts a ON a.id = (elem.value->>'account_id')::uuid
     WHERE a.id IS NULL OR a.organization_id <> p_org OR a.is_active <> true
   ) THEN
     RAISE EXCEPTION 'Jurnal sumber memakai akun yang tidak aktif atau lintas organisasi';
@@ -107,9 +107,9 @@ BEGIN
   ) RETURNING id INTO entry_id;
 
   INSERT INTO journal_lines (journal_entry_id, account_id, description, debit, credit)
-  SELECT entry_id, (x->>'account_id')::uuid, left(x->>'description',180),
-         (x->>'debit')::numeric, (x->>'credit')::numeric
-  FROM jsonb_array_elements(p_lines) x;
+  SELECT entry_id, (elem.value->>'account_id')::uuid, left(elem.value->>'description',180),
+         (elem.value->>'debit')::numeric, (elem.value->>'credit')::numeric
+  FROM jsonb_array_elements(p_lines) AS elem(value);
 
   UPDATE journal_entries SET status = 'posted', posted_by = p_actor
   WHERE id = entry_id;
@@ -120,16 +120,16 @@ $$;
 CREATE OR REPLACE FUNCTION post_invoice_to_ledger()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE cfg accounting_config%ROWTYPE;
-DECLARE lines jsonb := '[]'::jsonb;
+lines jsonb := '[]'::jsonb;
 BEGIN
   SELECT * INTO cfg FROM accounting_config WHERE organization_id = NEW.organization_id;
   IF NOT FOUND OR cfg.accounts_receivable_id IS NULL OR cfg.sales_revenue_id IS NULL THEN
     RAISE EXCEPTION 'Pemetaan Piutang dan Pendapatan wajib diatur sebelum invoice diposting';
   END IF;
-  lines := jsonb_build_array(
-    jsonb_build_object('account_id',cfg.accounts_receivable_id,'description','Piutang invoice '||NEW.invoice_number,'debit',NEW.total_amount,'credit',0),
-    jsonb_build_object('account_id',cfg.sales_revenue_id,'description','Pendapatan invoice '||NEW.invoice_number,'debit',0,'credit',NEW.subtotal)
-  );
+  lines := jsonb_build_array(jsonb_build_object('account_id',cfg.accounts_receivable_id,'description','Piutang invoice '||NEW.invoice_number,'debit',NEW.total_amount,'credit',0));
+  IF NEW.subtotal > 0 THEN
+    lines := lines || jsonb_build_array(jsonb_build_object('account_id',cfg.sales_revenue_id,'description','Pendapatan invoice '||NEW.invoice_number,'debit',0,'credit',NEW.subtotal));
+  END IF;
   IF NEW.tax_amount > 0 THEN
     IF cfg.output_tax_id IS NULL THEN RAISE EXCEPTION 'Pemetaan Pajak Keluaran wajib diatur'; END IF;
     lines := lines || jsonb_build_array(jsonb_build_object(
@@ -152,16 +152,16 @@ EXECUTE FUNCTION post_invoice_to_ledger();
 CREATE OR REPLACE FUNCTION post_supplier_bill_to_ledger()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE cfg accounting_config%ROWTYPE;
-DECLARE lines jsonb := '[]'::jsonb;
+lines jsonb := '[]'::jsonb;
 BEGIN
   SELECT * INTO cfg FROM accounting_config WHERE organization_id = NEW.organization_id;
   IF NOT FOUND OR cfg.accounts_payable_id IS NULL OR cfg.purchase_expense_id IS NULL THEN
     RAISE EXCEPTION 'Pemetaan Utang dan Pembelian wajib diatur sebelum faktur pemasok diposting';
   END IF;
-  lines := jsonb_build_array(
-    jsonb_build_object('account_id',cfg.purchase_expense_id,'description','Pembelian faktur '||NEW.supplier_invoice_number,'debit',NEW.subtotal,'credit',0),
-    jsonb_build_object('account_id',cfg.accounts_payable_id,'description','Utang faktur '||NEW.supplier_invoice_number,'debit',0,'credit',NEW.total_amount)
-  );
+  lines := jsonb_build_array(jsonb_build_object('account_id',cfg.accounts_payable_id,'description','Utang faktur '||NEW.supplier_invoice_number,'debit',0,'credit',NEW.total_amount));
+  IF NEW.subtotal > 0 THEN
+    lines := lines || jsonb_build_array(jsonb_build_object('account_id',cfg.purchase_expense_id,'description','Pembelian faktur '||NEW.supplier_invoice_number,'debit',NEW.subtotal,'credit',0));
+  END IF;
   IF NEW.tax_amount > 0 THEN
     IF cfg.input_tax_id IS NULL THEN RAISE EXCEPTION 'Pemetaan Pajak Masukan wajib diatur'; END IF;
     lines := lines || jsonb_build_array(jsonb_build_object(
@@ -189,6 +189,7 @@ DECLARE credit_account uuid;
 DECLARE lines jsonb;
 BEGIN
   IF NEW.payment_type <> 'supplier_payment' THEN RETURN NEW; END IF;
+  IF TG_OP = 'UPDATE' AND OLD.status = 'settled' THEN RETURN NEW; END IF;
   SELECT * INTO cfg FROM accounting_config WHERE organization_id = NEW.organization_id;
   SELECT * INTO bill FROM supplier_bills WHERE id = NEW.supplier_bill_id
     AND organization_id = NEW.organization_id;
@@ -216,6 +217,5 @@ $$;
 DROP TRIGGER IF EXISTS trg_post_supplier_payment_to_ledger ON payments;
 CREATE TRIGGER trg_post_supplier_payment_to_ledger
 AFTER INSERT OR UPDATE OF status ON payments
-FOR EACH ROW WHEN (NEW.status = 'settled' AND NEW.payment_type = 'supplier_payment'
-  AND (TG_OP = 'INSERT' OR OLD.status IS DISTINCT FROM 'settled'))
+FOR EACH ROW WHEN (NEW.status = 'settled' AND NEW.payment_type = 'supplier_payment')
 EXECUTE FUNCTION post_supplier_payment_to_ledger();
