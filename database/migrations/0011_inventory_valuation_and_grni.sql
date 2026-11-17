@@ -61,6 +61,9 @@ CREATE TABLE IF NOT EXISTS inventory_valuation_entries (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+ALTER TABLE inventory_valuation_entries
+  ADD COLUMN IF NOT EXISTS warehouse_id uuid REFERENCES warehouses(id);
+
 CREATE TABLE IF NOT EXISTS inventory_grni_applications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL REFERENCES organizations(id),
@@ -188,10 +191,10 @@ BEGIN
   END IF;
 
   INSERT INTO inventory_valuation_entries (
-    movement_id, organization_id, product_id, lot_id, movement_type, quantity,
+    movement_id, organization_id, warehouse_id, product_id, lot_id, movement_type, quantity,
     unit_cost, total_value, journal_entry_id
   ) VALUES (
-    NEW.id, NEW.organization_id, NEW.product_id, NEW.lot_id, NEW.movement_type,
+    NEW.id, NEW.organization_id, NEW.warehouse_id, NEW.product_id, NEW.lot_id, NEW.movement_type,
     NEW.quantity, NEW.unit_cost, value_amount, journal_id
   );
   RETURN NEW;
