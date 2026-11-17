@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { sql } from "@/lib/db";
 import { SignOutButton } from "../sign-out-button";
 import { updateInquiryStatus } from "./actions";
 
@@ -39,6 +38,7 @@ export default async function InquiriesPage({
 }) {
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
+  const { sql } = await import("@/lib/db");
 
   const actors = await sql`
     SELECT p.organization_id, r.name AS role_name
