@@ -5,8 +5,8 @@ DECLARE
   site_id uuid := gen_random_uuid();
   warehouse_id uuid := gen_random_uuid();
   supplier_id uuid := gen_random_uuid();
-  product_id uuid := gen_random_uuid();
-  lot_id uuid := gen_random_uuid();
+  v_product_id uuid := gen_random_uuid();
+  v_lot_id uuid := gen_random_uuid();
   po_id uuid := gen_random_uuid();
   po_item_id uuid := gen_random_uuid();
   gr_id uuid := gen_random_uuid();
@@ -32,9 +32,9 @@ BEGIN
   VALUES(warehouse_id,org_id,site_id,'FG','Finished Goods','finished_goods');
   INSERT INTO suppliers(id,organization_id,supplier_code,name) VALUES(supplier_id,org_id,'SUP-QA','Supplier QA');
   INSERT INTO products(id,organization_id,sku,name,product_type,is_sellable,is_purchasable)
-  VALUES(product_id,org_id,'QA-WATER','QA Water','finished_good',true,true);
+  VALUES(v_product_id,org_id,'QA-WATER','QA Water','finished_good',true,true);
   INSERT INTO inventory_lots(id,organization_id,product_id,lot_code,quality_status)
-  VALUES(lot_id,org_id,product_id,'QA-LOT-001','released');
+  VALUES(v_lot_id,org_id,v_product_id,'QA-LOT-001','released');
 
   INSERT INTO chart_of_accounts(id,organization_id,account_code,account_name,account_type) VALUES
     (inv_account,org_id,'1301','Persediaan QA','asset'),
@@ -58,17 +58,17 @@ BEGIN
   INSERT INTO purchase_orders(id,organization_id,site_id,po_number,supplier_id,status,subtotal,tax_amount,total_amount)
   VALUES(po_id,org_id,site_id,'PO-QA-001',supplier_id,'approved',1000,110,1110);
   INSERT INTO purchase_order_items(id,purchase_order_id,product_id,quantity_ordered,quantity_received,unit_price,tax_rate,line_total)
-  VALUES(po_item_id,po_id,product_id,10,10,100,11,1000);
+  VALUES(po_item_id,po_id,v_product_id,10,10,100,11,1000);
   INSERT INTO goods_receipts(id,organization_id,receipt_number,purchase_order_id,warehouse_id,status)
   VALUES(gr_id,org_id,'GR-QA-001',po_id,warehouse_id,'posted');
   INSERT INTO goods_receipt_items(goods_receipt_id,purchase_order_item_id,product_id,lot_id,quantity_received,unit_cost,line_total)
-  VALUES(gr_id,po_item_id,product_id,lot_id,10,100,1000);
+  VALUES(gr_id,po_item_id,v_product_id,v_lot_id,10,100,1000);
 
   INSERT INTO stock_movements(organization_id,movement_no,movement_type,warehouse_id,product_id,lot_id,
     quantity,unit_cost,reference_type,reference_id)
-  VALUES(org_id,'MOV-QA-GR-001','receipt',warehouse_id,product_id,lot_id,10,100,'goods_receipt',gr_id);
+  VALUES(org_id,'MOV-QA-GR-001','receipt',warehouse_id,v_product_id,v_lot_id,10,100,'goods_receipt',gr_id);
   SELECT quantity_on_hand,carrying_value INTO observed_qty,observed_cost
-  FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=product_id AND lot_id=lot_id;
+  FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=v_product_id AND lot_id=v_lot_id;
   IF observed_qty<>10 OR observed_cost<>1000 THEN
     RAISE EXCEPTION 'Receipt valuation incorrect: qty %, value %',observed_qty,observed_cost;
   END IF;
@@ -97,7 +97,7 @@ BEGIN
 
   INSERT INTO stock_movements(organization_id,movement_no,movement_type,warehouse_id,product_id,lot_id,
     quantity,unit_cost,reference_type,reference_id)
-  VALUES(org_id,'MOV-QA-DSP-001','sales_pick',warehouse_id,product_id,lot_id,4,999,'delivery',gen_random_uuid());
+  VALUES(org_id,'MOV-QA-DSP-001','sales_pick',warehouse_id,v_product_id,v_lot_id,4,999,'delivery',gen_random_uuid());
   SELECT quantity_on_hand,carrying_value INTO observed_qty,observed_cost
   FROM inventory_lot_costs WHERE organization_id=org_id AND product_id=product_id AND lot_id=lot_id;
   IF observed_qty<>6 OR observed_cost<>600 THEN
@@ -111,7 +111,7 @@ BEGIN
   BEGIN
     INSERT INTO stock_movements(organization_id,movement_no,movement_type,warehouse_id,product_id,lot_id,
       quantity,unit_cost,reference_type,reference_id)
-    VALUES(org_id,'MOV-QA-DSP-OVER','sales_pick',warehouse_id,product_id,lot_id,7,0,'delivery',gen_random_uuid());
+    VALUES(org_id,'MOV-QA-DSP-OVER','sales_pick',warehouse_id,v_product_id,v_lot_id,7,0,'delivery',gen_random_uuid());
     RAISE EXCEPTION 'Oversized lot issue was unexpectedly accepted';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM='Oversized lot issue was unexpectedly accepted' THEN RAISE; END IF;
