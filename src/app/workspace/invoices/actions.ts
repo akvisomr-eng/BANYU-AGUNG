@@ -89,3 +89,47 @@ export async function postInvoice(formData:FormData) {
   if(result.length===0) redirect("/workspace/invoices?error=post");
   redirect("/workspace/invoices?posted=1");
 }
+
+
+export async function settleInvoice(formData: FormData) {
+  const invoiceId = String(formData.get("invoice_id") ?? "");
+  const amount = Number(formData.get("amount"));
+  const method = String(formData.get("method") ?? "");
+  const reference = String(formData.get("reference_number") ?? "").trim();
+  const date = String(formData.get("payment_date") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(invoiceId) || !Number.isFinite(amount) || amount <= 0 ||
+      !["cash", "bank_transfer", "card"].includes(method) || reference.length > 120 ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    redirect("/workspace/invoices?error=payment");
+  }
+  const { row, sql } = await getInvoiceActor();
+  const rows = await sql`
+    WITH invoice AS (
+      SELECT id, customer_id, total_amount - paid_amount AS outstanding
+      FROM invoices
+      WHERE id = ${invoiceId}::uuid AND organization_id = ${row.organization_id}::uuid
+        AND status IN ('posted','partially_paid')
+    ), inserted AS (
+      INSERT INTO payments (
+        organization_id, payment_number, payment_type, party_type, party_id,
+        invoice_id, payment_date, amount, method, reference_number, status
+      )
+      SELECT ${row.organization_id}::uuid,
+        'RCV-' || to_char(${date}::date,'YYYYMMDD') || '-' ||
+          upper(substr(replace(gen_random_uuid()::text,'-',''),1,6)),
+        'customer_receipt','customer',customer_id,id,${date}::date,${amount},
+        ${method},${reference || null},'settled'
+      FROM invoice WHERE ${amount} <= outstanding
+      RETURNING id,payment_number,amount
+    ), logged AS (
+      INSERT INTO audit_logs (organization_id,actor_user_id,action,entity_type,entity_id,after_data)
+      SELECT ${row.organization_id}::uuid,${row.actor_id}::uuid,'SETTLE',
+        'customer_receipt',id::text,
+        jsonb_build_object('payment_number',payment_number,'amount',amount)
+      FROM inserted RETURNING id
+    )
+    SELECT id FROM inserted
+  `;
+  if (!rows.length) redirect("/workspace/invoices?error=balance");
+  redirect("/workspace/invoices?paid=1");
+}
