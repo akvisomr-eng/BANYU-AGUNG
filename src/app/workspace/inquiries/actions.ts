@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
-import { sql } from "@/lib/db";
 
 const allowedStatuses = new Set(["new", "assigned", "contacted", "qualified", "converted", "closed", "spam"]);
 
@@ -15,6 +14,7 @@ export async function updateInquiryStatus(formData: FormData) {
 
   const { data: session } = await auth.getSession();
   if (!session?.user) redirect("/auth/sign-in");
+  const { sql } = await import("@/lib/db");
 
   const result = await sql`
     WITH updated AS (
