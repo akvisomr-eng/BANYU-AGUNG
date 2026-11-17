@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 
-const allowedStatuses = new Set(["new", "assigned", "contacted", "qualified", "converted", "closed", "spam"]);
+const allowedStatuses = new Set(["new", "assigned", "contacted", "qualified", "closed", "spam"]);
 
 export async function updateInquiryStatus(formData: FormData) {
   const inquiryId = String(formData.get("inquiry_id") ?? "");
