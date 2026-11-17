@@ -77,8 +77,8 @@ BEGIN
     AND source_id = p_source AND status <> 'reversed';
   IF existing_id IS NOT NULL THEN RETURN existing_id; END IF;
 
-  SELECT count(*)::int, COALESCE(sum((x->>'debit')::numeric),0),
-         COALESCE(sum((x->>'credit')::numeric),0)
+  SELECT count(*)::int, COALESCE(sum((elem.value->>'debit')::numeric),0),
+         COALESCE(sum((elem.value->>'credit')::numeric),0)
     INTO line_count, debit_total, credit_total
   FROM jsonb_array_elements(p_lines) AS elem(value);
 
@@ -184,9 +184,9 @@ EXECUTE FUNCTION post_supplier_bill_to_ledger();
 CREATE OR REPLACE FUNCTION post_supplier_payment_to_ledger()
 RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE cfg accounting_config%ROWTYPE;
-DECLARE bill supplier_bills%ROWTYPE;
-DECLARE credit_account uuid;
-DECLARE lines jsonb;
+  bill supplier_bills%ROWTYPE;
+  credit_account uuid;
+  lines jsonb;
 BEGIN
   IF NEW.payment_type <> 'supplier_payment' THEN RETURN NEW; END IF;
   IF TG_OP = 'UPDATE' AND OLD.status = 'settled' THEN RETURN NEW; END IF;
