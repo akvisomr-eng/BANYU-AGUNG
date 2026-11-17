@@ -310,3 +310,24 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .setupNotice{padding:14px;background:#fff5dd;color:#795d27;font-size:12px;line-height:1.6}
 .setupNotice a{color:#176b70;font-weight:700}
 @media(max-width:900px){.setupGrid,.setupDataGrid{grid-template-columns:1fr}}
+
+
+/* Sales and procurement order entry */
+.orderCreatePanel{margin-bottom:28px}
+.orderForm{max-width:900px}
+.orderForm select{width:100%;border:1px solid #cbd9d3;background:#fbfcfa;padding:13px;color:#102c35;font:inherit;font-size:12px;border-radius:2px}
+.orderForm select:focus,.orderNumbers input:focus{outline:2px solid #8abbb0;outline-offset:1px}
+.orderForm h3{font-family:"Playfair Display",serif;font-size:19px;font-weight:500;margin:18px 0 2px}
+.orderLine{border:1px solid #e1e9e2;background:#fbfcfa;padding:15px;margin:12px 0}
+.orderLine>label{font-size:11px;font-weight:700;color:#526d71}
+.orderNumbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.orderNumbers label{font-size:10px;color:#71858a}
+.orderNumbers input{display:block;width:100%;margin-top:5px;min-width:0;padding:11px 9px;border:1px solid #cbd9d3;background:#fff;color:#102c35;font:inherit;font-size:12px}
+.orderList{display:grid;gap:10px}
+.orderItem{display:flex;justify-content:space-between;align-items:center;gap:18px;background:#fff;border:1px solid #e1e9e2;padding:17px 20px}
+.orderItem h3{font-family:"Playfair Display",serif;font-size:18px;font-weight:500;margin:6px 0}
+.orderItem small{display:block;color:#82928e;font-size:10px}
+.orderItem>strong{font-size:13px;color:#174b52;white-space:nowrap}
+.supplierCreatePanel{margin-bottom:28px}
+.supplierForm{max-width:760px}
+@media(max-width:700px){.orderNumbers{grid-template-columns:repeat(2,minmax(0,1fr))}.orderItem{align-items:flex-start;flex-direction:column;gap:8px}.orderItem>strong{white-space:normal}}
