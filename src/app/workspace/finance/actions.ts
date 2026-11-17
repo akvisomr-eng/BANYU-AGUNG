@@ -143,3 +143,45 @@ export async function postJournal(formData: FormData) {
   if (!result.length) redirect("/workspace/finance?error=post");
   redirect("/workspace/finance?journal_posted=1");
 }
+
+
+export async function saveAccountingConfig(formData: FormData) {
+  const fields = [
+    "accounts_receivable_id", "accounts_payable_id", "sales_revenue_id",
+    "purchase_expense_id", "cash_account_id", "bank_account_id"
+  ] as const;
+  const optionalFields = ["output_tax_id", "input_tax_id"] as const;
+  const values = Object.fromEntries([...fields, ...optionalFields].map(key => [key, String(formData.get(key) ?? "").trim()]));
+  if (fields.some(key => !/^[0-9a-f-]{36}$/i.test(values[key])) ||
+      optionalFields.some(key => values[key] && !/^[0-9a-f-]{36}$/i.test(values[key]))) {
+    redirect("/workspace/finance/settings?error=mapping");
+  }
+  const { actor, sql } = await getFinanceActor(true);
+  const saved = await sql`
+    INSERT INTO accounting_config (
+      organization_id, accounts_receivable_id, accounts_payable_id,
+      sales_revenue_id, purchase_expense_id, output_tax_id, input_tax_id,
+      cash_account_id, bank_account_id, updated_by
+    ) VALUES (
+      ${actor.organization_id}::uuid, ${values.accounts_receivable_id}::uuid,
+      ${values.accounts_payable_id}::uuid, ${values.sales_revenue_id}::uuid,
+      ${values.purchase_expense_id}::uuid, ${values.output_tax_id || null}::uuid,
+      ${values.input_tax_id || null}::uuid, ${values.cash_account_id}::uuid,
+      ${values.bank_account_id}::uuid, ${actor.actor_id}::uuid
+    )
+    ON CONFLICT (organization_id) DO UPDATE SET
+      accounts_receivable_id = EXCLUDED.accounts_receivable_id,
+      accounts_payable_id = EXCLUDED.accounts_payable_id,
+      sales_revenue_id = EXCLUDED.sales_revenue_id,
+      purchase_expense_id = EXCLUDED.purchase_expense_id,
+      output_tax_id = EXCLUDED.output_tax_id,
+      input_tax_id = EXCLUDED.input_tax_id,
+      cash_account_id = EXCLUDED.cash_account_id,
+      bank_account_id = EXCLUDED.bank_account_id,
+      updated_by = EXCLUDED.updated_by,
+      updated_at = now()
+    RETURNING organization_id
+  `;
+  if (!saved.length) redirect("/workspace/finance/settings?error=mapping");
+  redirect("/workspace/finance/settings?saved=1");
+}

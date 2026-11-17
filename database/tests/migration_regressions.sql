@@ -12,8 +12,17 @@ DECLARE
   overpay_bill_id uuid := gen_random_uuid();
   journal_id uuid := gen_random_uuid();
   payment_id uuid;
+  receipt_id uuid;
   cash_account uuid := gen_random_uuid();
   payable_account uuid := gen_random_uuid();
+  bank_account uuid := gen_random_uuid();
+  ar_account uuid := gen_random_uuid();
+  revenue_account uuid := gen_random_uuid();
+  purchase_account uuid := gen_random_uuid();
+  input_tax_account uuid := gen_random_uuid();
+  output_tax_account uuid := gen_random_uuid();
+  customer_a uuid := gen_random_uuid();
+  invoice_a uuid := gen_random_uuid();
   observed numeric(18,2);
   observed_status text;
 BEGIN
@@ -25,6 +34,61 @@ BEGIN
     (supplier_b, org_b, 'SUP-B', 'Supplier B');
   INSERT INTO user_profiles (id, organization_id, auth_subject, full_name, email, status)
   VALUES (actor_id, org_a, 'ci-actor-a', 'CI Actor', 'ci-actor@example.test', 'active');
+  INSERT INTO chart_of_accounts (id, organization_id, account_code, account_name, account_type)
+  VALUES
+    (cash_account, org_a, '1101', 'Kas Test', 'asset'),
+    (bank_account, org_a, '1102', 'Bank Test', 'asset'),
+    (ar_account, org_a, '1201', 'Piutang Test', 'asset'),
+    (payable_account, org_a, '2101', 'Utang Test', 'liability'),
+    (output_tax_account, org_a, '2102', 'Pajak Keluaran Test', 'liability'),
+    (input_tax_account, org_a, '1202', 'Pajak Masukan Test', 'asset'),
+    (revenue_account, org_a, '4101', 'Pendapatan Test', 'revenue'),
+    (purchase_account, org_a, '5101', 'Pembelian Test', 'expense');
+  INSERT INTO accounting_config (organization_id, accounts_receivable_id, accounts_payable_id,
+    sales_revenue_id, purchase_expense_id, output_tax_id, input_tax_id, cash_account_id,
+    bank_account_id, updated_by)
+  VALUES (org_a, ar_account, payable_account, revenue_account, purchase_account,
+    output_tax_account, input_tax_account, cash_account, bank_account, actor_id);
+  INSERT INTO customers (id, organization_id, customer_code, name)
+  VALUES (customer_a, org_a, 'CUS-A', 'Customer A');
+  INSERT INTO invoices (id, organization_id, invoice_number, customer_id, invoice_date,
+    subtotal, tax_amount, total_amount, status)
+  VALUES (invoice_a, org_a, 'INV-AR-001', customer_a, DATE '2026-11-01', 100, 11, 111, 'draft');
+  UPDATE invoices SET status = 'posted' WHERE id = invoice_a;
+  IF NOT EXISTS (SELECT 1 FROM journal_entries WHERE organization_id = org_a
+    AND source_module = 'invoice' AND source_id = invoice_a AND status = 'posted'
+    AND total_debit = 111 AND total_credit = 111) THEN
+    RAISE EXCEPTION 'Invoice posting did not create a balanced AR/revenue/tax journal';
+  END IF;
+  INSERT INTO payments (organization_id,payment_number,payment_type,party_type,party_id,
+    invoice_id,payment_date,amount,method,status)
+  VALUES (org_a,'RCV-AR-001','customer_receipt','customer',customer_a,invoice_a,
+    DATE '2026-11-02',40,'bank_transfer','draft') RETURNING id INTO receipt_id;
+  UPDATE payments SET status = 'settled' WHERE id = receipt_id;
+  SELECT paid_amount,status INTO observed,observed_status FROM invoices WHERE id = invoice_a;
+  IF observed <> 40 OR observed_status <> 'partially_paid' THEN
+    RAISE EXCEPTION 'Partial customer receipt regression: paid %, status %', observed, observed_status;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM journal_entries WHERE organization_id = org_a
+    AND source_module = 'customer_receipt' AND source_id = receipt_id AND status = 'posted'
+    AND total_debit = 40 AND total_credit = 40) THEN
+    RAISE EXCEPTION 'Customer receipt did not create a balanced cash/AR journal';
+  END IF;
+  BEGIN
+    UPDATE payments SET reference_number = 'MUTATED' WHERE id = receipt_id;
+    RAISE EXCEPTION 'Settled customer receipt was unexpectedly mutable';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM = 'Settled customer receipt was unexpectedly mutable' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Penerimaan settled tidak dapat diubah%' THEN RAISE; END IF;
+  END;
+  INSERT INTO payments (organization_id,payment_number,payment_type,party_type,party_id,
+    invoice_id,payment_date,amount,method,status)
+  VALUES (org_a,'RCV-AR-002','customer_receipt','customer',customer_a,invoice_a,
+    DATE '2026-11-03',71,'cash','settled');
+  SELECT paid_amount,status INTO observed,observed_status FROM invoices WHERE id = invoice_a;
+  IF observed <> 111 OR observed_status <> 'paid' THEN
+    RAISE EXCEPTION 'Full customer receipt regression: paid %, status %', observed, observed_status;
+  END IF;
 
   INSERT INTO supplier_bills (
     id, organization_id, supplier_id, supplier_invoice_number,
@@ -47,6 +111,17 @@ BEGIN
     FROM supplier_bills WHERE id = bill_id;
   IF observed <> 50 OR observed_status <> 'partially_paid' THEN
     RAISE EXCEPTION 'Partial settlement regression: paid %, status %', observed, observed_status;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM journal_entries WHERE organization_id = org_a
+    AND source_module = 'supplier_bill' AND source_id = bill_id AND status = 'posted'
+    AND total_debit = 111 AND total_credit = 111) THEN
+    RAISE EXCEPTION 'Supplier bill posting did not create a balanced AP journal';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM journal_entries j JOIN payments p ON p.id = j.source_id
+    WHERE j.organization_id = org_a AND j.source_module = 'supplier_payment'
+      AND p.payment_number = 'PAY-AP-001' AND j.status = 'posted'
+      AND j.total_debit = 50 AND j.total_credit = 50) THEN
+    RAISE EXCEPTION 'Supplier payment did not create a balanced AP/cash journal';
   END IF;
 
   BEGIN
@@ -114,10 +189,6 @@ BEGIN
     IF SQLERRM NOT LIKE 'Faktur pemasok tidak cocok%' THEN RAISE; END IF;
   END;
 
-  INSERT INTO chart_of_accounts (id, organization_id, account_code, account_name, account_type)
-  VALUES
-    (cash_account, org_a, '1101', 'Kas Test', 'asset'),
-    (payable_account, org_a, '2101', 'Utang Test', 'liability');
   INSERT INTO journal_entries (
     id, organization_id, journal_number, journal_date, description, status
   ) VALUES (
