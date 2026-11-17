@@ -63,6 +63,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
       <Link className="sideLink" href="/workspace">← Ringkasan</Link>
       <Link className="sideActive" href="/workspace/finance">Keuangan</Link>
       <Link className="sideLink" href="/workspace/invoices">Piutang / Invoice</Link>
+      <Link className="sideLink" href="/workspace/payables">Utang Pemasok</Link>
       <Link className="sideLink" href="/workspace/purchase-orders">Pembelian</Link>
       <Link className="sideLink" href="/workspace/reports">Laporan</Link>
     </aside>
@@ -113,7 +114,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
           <div className="invoiceAmount"><strong>{money(j.total_debit)}</strong><small>Debit = Kredit</small></div>
           {actor.role_code === "OWNER" && j.status === "draft" && <form action={postJournal}><input type="hidden" name="journal_id" value={j.id}/><button className="primary" type="submit">Posting jurnal</button></form>}
         </article>)}</div>}
-      <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Piutang hanya berdasarkan invoice posted. Utang pemasok belum dihitung karena faktur pemasok belum tersedia.</p>
+      <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Piutang dihitung dari invoice posted. Pengelolaan utang pemasok tersedia pada modul <Link href="/workspace/payables">Utang Pemasok</Link>; saldo AP terintegrasi ke buku besar setelah migrasi database dan validasi posting selesai.</p>
     </section>
   </main>;
 }
