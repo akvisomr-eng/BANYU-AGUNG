@@ -94,11 +94,6 @@ export async function createPurchaseOrder(formData: FormData) {
   redirect("/workspace/purchase-orders?created=1");
 }
 
-"use server";
-
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/server";
-
 export async function approvePurchaseOrder(formData: FormData) {
   const id = String(formData.get("purchase_order_id") ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(id)) redirect("/workspace/purchase-orders?error=approval");
