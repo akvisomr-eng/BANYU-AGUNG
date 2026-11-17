@@ -208,3 +208,18 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .novemberPhotoCredit{font-size:9px!important;color:#3d83a4!important;text-decoration:none;letter-spacing:.02em;margin-top:2px}
 .novemberPhotoCredit:hover{text-decoration:underline}
 .novemberImageNote a{color:#357b9f;text-decoration:underline}
+
+
+/* BANYU AGUNG – AIR MINUM JOLOTUNDO heritage wordmark */
+.novemberSite{--nov-blue:#176b70;--nov-deep:#123f43;--nov-ice:#e9f3ed;--nov-pale:#f5f7f1;--nov-line:#dce7dc;--nov-text:#23484a;--nov-muted:#708781}
+.novemberHeritageLogo{gap:12px}
+.novemberHeritageLogo .novemberLogoMark{width:46px;height:46px;border-radius:50%;border:1px solid #b18a4b;background:linear-gradient(145deg,#174f50,#0f383d);color:#e5c78d;box-shadow:inset 0 0 0 3px #174f50,inset 0 0 0 4px #b18a4b;font-family:Georgia,"Times New Roman",serif}
+.novemberHeritageLogo .novemberLogoMark span{font-size:29px;line-height:1;transform:translateY(-1px)}
+.novemberHeritageLogo .novemberLogoText{display:flex;flex-direction:column;gap:2px;letter-spacing:.09em}
+.novemberHeritageLogo .novemberLogoText strong{font-family:Georgia,"Times New Roman",serif;font-size:19px;line-height:1;color:#123f43;letter-spacing:.11em;font-weight:700}
+.novemberHeritageLogo .novemberJavanese{font-family:"Noto Serif Javanese","Noto Sans Javanese",serif;font-size:15px;line-height:1.45;letter-spacing:.04em;color:#a47b3d;font-weight:600}
+.novemberHeritageLogo .novemberLogoText small{font-size:7px;letter-spacing:.18em;color:#67827a;margin-top:1px}
+.novemberFooter .novemberHeritageLogo .novemberLogoText strong{color:#fff}
+.novemberFooter .novemberHeritageLogo .novemberJavanese{color:#d8b979}
+.novemberFooter .novemberHeritageLogo .novemberLogoText small{color:#b1c8bd}
+@media(max-width:560px){.novemberHeritageLogo .novemberLogoMark{width:41px;height:41px}.novemberHeritageLogo .novemberLogoText strong{font-size:16px}.novemberHeritageLogo .novemberJavanese{font-size:13px}.novemberHeritageLogo .novemberLogoText small{font-size:6px}}
