@@ -31,7 +31,7 @@ export async function recordLotInspection(formData: FormData) {
       FROM actor
       WHERE l.id=${lotId}::uuid AND l.organization_id=actor.organization_id
         AND l.quality_status IN ('pending','quarantined')
-        AND (${result} <> 'released' OR actor.role_code='OWNER')
+        AND (${result} <> 'released' OR (actor.role_code='OWNER' AND (l.expires_at IS NULL OR l.expires_at>=current_date)))
       RETURNING l.id,l.organization_id,l.product_id,l.lot_code
     ),
     inspection AS (
