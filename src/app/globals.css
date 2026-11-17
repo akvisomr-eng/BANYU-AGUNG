@@ -280,3 +280,22 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .inquiryStatusForm button{border:0;padding:11px 14px;font:inherit;font-size:11px;cursor:pointer}
 @media(max-width:900px){.inquiryList{grid-template-columns:1fr}}
 @media(max-width:520px){.inquiryItem{padding:17px}.inquiryItemHead{display:block}.inquiryStatus{display:inline-block}.inquiryStatusForm{grid-template-columns:1fr 1fr}.inquiryStatusForm label{grid-column:1/-1}.inquiryStatusForm button{grid-column:1/-1}}
+
+
+/* Customer master and inquiry conversion */
+.customerCreatePanel{margin-bottom:28px}
+.customerForm{max-width:760px}
+.customerForm select{width:100%;border:1px solid #cbd9d3;background:#fbfcfa;padding:14px 13px;font:inherit;font-size:13px;color:#102c35;border-radius:2px}
+.customerForm select:focus{outline:2px solid #8abbb0;outline-offset:1px}
+.customerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.customerItem{background:#fff;border:1px solid #e1e9e2;padding:20px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.customerItem h3{font-family:"Playfair Display",serif;font-size:21px;font-weight:500;margin:7px 0}
+.customerItem .inquiryContacts{grid-column:1/-1}
+.inquiryConvertForm{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:10px;margin-top:16px;padding:14px;background:#f5f8f5}
+.inquiryConvertForm label{font-size:10px;color:#60747a}
+.inquiryConvertForm select{min-width:0;padding:10px;border:1px solid #cbd9d3;background:#fff;color:#102c35;font:inherit;font-size:11px}
+.inquiryConvertForm button{border:0;padding:11px 14px;font:inherit;font-size:11px;cursor:pointer}
+.inquiryConverted{margin:15px 0 0;padding:12px;background:#e9f5ee;color:#286746;font-size:11px}
+.inquiryConverted a{color:#176b70;font-weight:700;text-decoration:none}
+@media(max-width:900px){.customerList{grid-template-columns:1fr}}
+@media(max-width:520px){.customerItem{padding:16px}.inquiryConvertForm{grid-template-columns:1fr}.inquiryConvertForm button{width:100%}}
