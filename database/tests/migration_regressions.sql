@@ -10,6 +10,7 @@ DECLARE
   bill_id uuid := gen_random_uuid();
   overpay_bill_id uuid := gen_random_uuid();
   journal_id uuid := gen_random_uuid();
+  payment_id uuid;
   cash_account uuid := gen_random_uuid();
   payable_account uuid := gen_random_uuid();
   observed numeric(18,2);
@@ -36,13 +37,30 @@ BEGIN
     supplier_bill_id, payment_date, amount, method, status
   ) VALUES (
     org_a, 'PAY-AP-001', 'supplier_payment', 'supplier', supplier_a,
-    bill_id, DATE '2026-11-02', 50, 'bank_transfer', 'settled'
-  );
+    bill_id, DATE '2026-11-02', 50, 'bank_transfer', 'draft'
+  ) RETURNING id INTO payment_id;
+  UPDATE payments SET status = 'settled' WHERE id = payment_id;
   SELECT paid_amount, status INTO observed, observed_status
     FROM supplier_bills WHERE id = bill_id;
   IF observed <> 50 OR observed_status <> 'partially_paid' THEN
     RAISE EXCEPTION 'Partial settlement regression: paid %, status %', observed, observed_status;
   END IF;
+
+  BEGIN
+    UPDATE payments SET reference_number = 'MUTATED' WHERE id = payment_id;
+    RAISE EXCEPTION 'Settled supplier payment was unexpectedly mutable';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM = 'Settled supplier payment was unexpectedly mutable' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Pembayaran settled tidak dapat diubah%' THEN RAISE; END IF;
+  END;
+
+  BEGIN
+    UPDATE supplier_bills SET subtotal = 99 WHERE id = bill_id;
+    RAISE EXCEPTION 'Posted supplier bill was unexpectedly mutable';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM = 'Posted supplier bill was unexpectedly mutable' THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE 'Faktur pemasok yang sudah dibuat%' THEN RAISE; END IF;
+  END;
 
   INSERT INTO payments (
     organization_id, payment_number, payment_type, party_type, party_id,
