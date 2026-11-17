@@ -223,3 +223,9 @@ footer{padding:45px 9vw;background:#102f38;color:#d9e8e2}footer .brand{color:#ff
 .novemberFooter .novemberHeritageLogo .novemberJavanese{color:#d8b979}
 .novemberFooter .novemberHeritageLogo .novemberLogoText small{color:#b1c8bd}
 @media(max-width:560px){.novemberHeritageLogo .novemberLogoMark{width:41px;height:41px}.novemberHeritageLogo .novemberLogoText strong{font-size:16px}.novemberHeritageLogo .novemberJavanese{font-size:13px}.novemberHeritageLogo .novemberLogoText small{font-size:6px}}
+
+/* Original BANYU AGUNG product concept illustrations */
+.novemberProductVisual img{width:min(82%,250px);height:205px;object-fit:contain;display:block;filter:drop-shadow(0 12px 12px #174c4b12)}
+.novemberProductCard:nth-child(3) .novemberProductVisual img{width:min(90%,270px);height:195px}
+.novemberProductWord{font-size:7px;letter-spacing:.17em;color:#67877b}
+@media(max-width:560px){.novemberProductVisual{height:225px}.novemberProductVisual img{height:195px}}

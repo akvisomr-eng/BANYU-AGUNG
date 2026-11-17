@@ -105,8 +105,12 @@ export default function Home() {
             {products.map((product) => <article className="novemberProductCard" key={product.number}>
               <div className="novemberProductVisual">
                 <span className="novemberCardNumber">{product.number}</span>
-                <div className={`novemberWaterShape novemberWaterShape${product.number}`}><i></i></div>
-                <span className="novemberProductWord">BANYU AGUNG</span>
+                <img
+                  src={product.number === "01" ? "/images/banyu-agung-bottle-concept.svg" : product.number === "02" ? "/images/banyu-agung-gallon-concept.svg" : "/images/banyu-agung-distribution-concept.svg"}
+                  alt={product.number === "01" ? "Konsep desain botol BANYU AGUNG" : product.number === "02" ? "Konsep desain galon BANYU AGUNG" : "Ilustrasi kemitraan distribusi BANYU AGUNG"}
+                  loading="lazy"
+                />
+                <span className="novemberProductWord">KONSEP VISUAL</span>
               </div>
               <div className="novemberProductBody"><h3>{product.title}</h3><p>{product.text}</p><small>{product.note}</small></div>
             </article>)}
