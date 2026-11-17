@@ -13,6 +13,10 @@ const inquirySchema = z.object({
   message: z.string().trim().min(10).max(2000),
   consent: z.literal("on"),
   website: z.string().max(200).optional(),
+}).superRefine((data, context) => {
+  if (data.preferred_contact === "email" && !data.email) {
+    context.addIssue({ code: "custom", path: ["email"], message: "Email wajib diisi jika memilih kontak email." });
+  }
 });
 
 export async function createInquiry(formData: FormData) {
