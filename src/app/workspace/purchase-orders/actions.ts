@@ -52,7 +52,7 @@ export async function createPurchaseOrder(formData: FormData) {
         SELECT r.product_id,r.quantity_ordered,r.unit_price,r.tax_rate
         FROM requested r JOIN products p ON p.id=r.product_id
         CROSS JOIN valid_context v
-        WHERE p.organization_id=v.organization_id AND p.is_active=true AND p.is_purchasable=true
+        WHERE p.organization_id=v.organization_id AND p.is_active=true AND p.is_purchasable=true AND p.product_type<>'service'
       ),
       totals AS (
         SELECT count(*) AS line_count,coalesce(sum(quantity_ordered*unit_price),0) AS subtotal,
