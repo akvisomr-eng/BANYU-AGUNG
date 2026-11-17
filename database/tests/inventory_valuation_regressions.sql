@@ -159,4 +159,4 @@ BEGIN
     IF SQLERRM='GR/IR application mutation was unexpectedly accepted' THEN RAISE; END IF;
     IF SQLERRM NOT LIKE 'Subledger persediaan tidak dapat diubah%' THEN RAISE; END IF;
   END;
-END $;
+END $$;
