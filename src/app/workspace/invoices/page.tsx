@@ -2,14 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "../sign-out-button";
-import { createInvoice, postInvoice } from "./actions";
+import { createInvoice, postInvoice, settleInvoice } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 type DeliveredOrder={id:string;order_number:string;customer_name:string;delivered_at:string;total_amount:string|number};
 type Invoice={id:string;invoice_number:string;customer_name:string;sales_order_number:string|null;invoice_date:string;due_date:string|null;total_amount:string|number;paid_amount:string|number;status:string};
 
-export default async function InvoicesPage({searchParams}:{searchParams:Promise<{created?:string;posted?:string;error?:string}>}) {
+export default async function InvoicesPage({searchParams}:{searchParams:Promise<{created?:string;posted?:string;paid?:string;error?:string}>}) {
   const {data:session}=await auth.getSession();
   if(!session?.user) redirect("/auth/sign-in");
   const {sql}=await import("@/lib/db");
@@ -52,7 +52,7 @@ export default async function InvoicesPage({searchParams}:{searchParams:Promise<
       <section className="workMain">
         <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / FINANCE</p><h1>Invoices / Piutang</h1><p className="muted">Invoice dibuat dari pesanan yang sudah dikonfirmasi terkirim · {actor.role_name}</p></div><SignOutButton /></header>
         {params.created==="1" && <p className="authSuccess" role="status">Invoice draft berhasil dibuat. Posting akan membuat jurnal piutang, pendapatan, dan pajak sesuai pemetaan akun.</p>}
-        {params.posted==="1" && <p className="authSuccess" role="status">Invoice berhasil diposting bersama jurnal piutang, pendapatan, dan pajak.</p>}
+        {params.posted==="1" && <p className="authSuccess" role="status">Invoice berhasil diposting bersama jurnal piutang, pendapatan, dan pajak.</p>}{params.paid==="1" && <p className="authSuccess" role="status">Penerimaan pelanggan tercatat, saldo piutang dan jurnal kas/bank diperbarui.</p>}
         {params.error && <p className="authError" role="alert">{params.error==="invalid" ? "Tanggal jatuh tempo atau referensi pesanan tidak valid." : params.error==="order" ? "Invoice hanya dapat dibuat satu kali dari sales order berstatus delivered." : "Invoice tidak dapat diposting. Pastikan status masih draft dan hak akses sesuai."}</p>}
         <div className="metricGrid">
           <article className="metric"><span>Invoice tercatat</span><strong>{invoices.length}</strong><small>Maksimal 100 terbaru</small></article>
@@ -66,9 +66,9 @@ export default async function InvoicesPage({searchParams}:{searchParams:Promise<
         }
         <h2>Daftar invoice</h2>
         {invoices.length===0 ? <article className="moduleCard"><small>Belum ada invoice.</small></article> :
-          <div className="invoiceList">{invoices.map(invoice=><article className="invoiceItem" key={invoice.id}><div><span className="inquiryType">{invoice.invoice_number} · {invoice.status}</span><h3>{invoice.customer_name}</h3><small>{invoice.sales_order_number??"Invoice manual"} · Tanggal {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(invoice.invoice_date))}{invoice.due_date ? " · Jatuh tempo "+new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(invoice.due_date)) : ""}</small></div><div className="invoiceAmount"><strong>{Number(invoice.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong><small>Terbayar {Number(invoice.paid_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</small></div>{actor.role_code==="OWNER" && invoice.status==="draft" && <form action={postInvoice}><input type="hidden" name="invoice_id" value={invoice.id}/><button className="primary" type="submit">Posting invoice</button></form>}</article>)}</div>
+          <div className="invoiceList">{invoices.map(invoice=><article className="invoiceItem" key={invoice.id}><div><span className="inquiryType">{invoice.invoice_number} · {invoice.status}</span><h3>{invoice.customer_name}</h3><small>{invoice.sales_order_number??"Invoice manual"} · Tanggal {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(invoice.invoice_date))}{invoice.due_date ? " · Jatuh tempo "+new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(invoice.due_date)) : ""}</small></div><div className="invoiceAmount"><strong>{Number(invoice.total_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</strong><small>Terbayar {Number(invoice.paid_amount).toLocaleString("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:2})}</small></div>{actor.role_code==="OWNER" && invoice.status==="draft" && <form action={postInvoice}><input type="hidden" name="invoice_id" value={invoice.id}/><button className="primary" type="submit">Posting invoice</button></form>}{["posted","partially_paid"].includes(invoice.status) && <form action={settleInvoice} className="deliveryCreateForm"><input type="hidden" name="invoice_id" value={invoice.id}/><label>Nominal diterima<input name="amount" type="number" min="0.01" max={Number(invoice.total_amount)-Number(invoice.paid_amount)} step="0.01" required/></label><label>Tanggal terima<input name="payment_date" type="date" required/></label><label>Metode<select name="method"><option value="bank_transfer">Transfer bank</option><option value="cash">Tunai</option><option value="card">Kartu</option></select></label><label>Referensi<input name="reference_number" maxLength={120}/></label><button className="primary" type="submit">Catat penerimaan</button></form>}</article>)}</div>
         }
-        <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Posting invoice membuat jurnal otomatis setelah pemetaan akun tersedia. Penerimaan pelanggan masih memerlukan modul pembayaran AR.</p>
+        <p className="workspaceFoot"><Link href="/workspace">Kembali ke dashboard</Link> · Posting invoice dan penerimaan pelanggan membuat jurnal otomatis setelah pemetaan akun tersedia.</p>
       </section>
     </main>
   );
