@@ -4,11 +4,14 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -32,9 +35,9 @@ export default function ResetPasswordPage() {
     <p className="eyebrow">KEAMANAN AKUN</p><h1>Buat kata sandi baru</h1>
     <form onSubmit={submit} className="authForm">
       <label htmlFor="password">Kata sandi baru</label>
-      <input id="password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={e=>setPassword(e.target.value)}/>
+      <div className="authPasswordField"><input id="password" type={showPassword ? "text" : "password"} autoComplete="new-password" minLength={8} required value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" className="authPasswordToggle" onClick={()=>setShowPassword(value=>!value)} aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}>{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button></div>
       <label htmlFor="confirm">Ulangi kata sandi</label>
-      <input id="confirm" type="password" autoComplete="new-password" required value={confirm} onChange={e=>setConfirm(e.target.value)}/>
+      <div className="authPasswordField"><input id="confirm" type={showConfirm ? "text" : "password"} autoComplete="new-password" required value={confirm} onChange={e=>setConfirm(e.target.value)}/><button type="button" className="authPasswordToggle" onClick={()=>setShowConfirm(value=>!value)} aria-label={showConfirm ? "Sembunyikan konfirmasi kata sandi" : "Tampilkan konfirmasi kata sandi"}>{showConfirm ? <EyeOff size={18}/> : <Eye size={18}/>}</button></div>
       {error && <p className="authError" role="alert">{error}</p>}
       <button className="primary authSubmit" disabled={busy}>{busy ? "Menyimpan..." : "Simpan kata sandi"}</button>
     </form>
