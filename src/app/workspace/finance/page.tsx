@@ -20,7 +20,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
     FROM user_profiles p JOIN user_role_assignments a ON a.user_id = p.id
     JOIN roles r ON r.id = a.role_id
     WHERE p.auth_subject = ${session.user.id} AND p.status = 'active'
-      AND r.code IN ('OWNER', 'ADMIN')
+      AND r.code IN ('OWNER', 'ADMIN', 'FINANCE')
     ORDER BY CASE WHEN r.code = 'OWNER' THEN 0 ELSE 1 END LIMIT 1
   `;
   const actor = actors[0] as { organization_id: string; role_code: string; role_name: string } | undefined;
