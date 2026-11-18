@@ -4,11 +4,13 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -41,11 +43,11 @@ export default function SignInPage() {
       <label htmlFor="email">Alamat email</label>
       <input id="email" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="nama@perusahaan.com"/>
       <label htmlFor="password">Kata sandi</label>
-      <input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Masukkan kata sandi"/>
+      <div className="authPasswordField"><input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Masukkan kata sandi"/><button type="button" className="authPasswordToggle" onClick={()=>setShowPassword(value=>!value)} aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}>{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button></div>
       {error && <p className="authError" role="alert">{error}</p>}
       <button className="primary authSubmit" disabled={busy}>{busy ? "Memeriksa..." : "Masuk"}</button>
     </form>
     <Link className="authHelp" href="/auth/forgot-password">Lupa kata sandi?</Link>
-    <p className="authFoot">Pendaftaran akun publik dinonaktifkan. Hubungi administrator untuk memperoleh akses.</p>
+    <p className="authFoot">Belum memiliki akun? <Link href="/auth/sign-up">Daftar di sini</Link>. Akses sistem aktif setelah peran disetujui administrator.</p>
   </section></main>;
 }
