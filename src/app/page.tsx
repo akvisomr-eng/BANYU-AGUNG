@@ -66,15 +66,16 @@ export default async function Home() {
           </Link>
           <nav className="novemberDesktopNav" aria-label="Navigasi utama">
             {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-              {session?.user ? <>{account && <a href="/workspace">Dashboard · {account.role_name}</a>}<SignOutButton /></> : <Link href="/auth/sign-in">Sign In / Masuk</Link>}
+              {session?.user ? <>{account && <a href="/workspace">Dashboard · {account.role_name}</a>}<SignOutButton /></> : <><Link href="/auth/sign-in">Masuk</Link><Link href="/auth/sign-up" className="novemberAccountLink">Daftar</Link></>}
           </nav>
           <div className="novemberAccountNav">
-            {session?.user ? <>{account ? <><span className="novemberAccountIdentity">{account.full_name} · {account.role_name}</span><Link className="novemberAccountLink" href="/workspace">Dashboard</Link></> : <span className="novemberAccountIdentity">Akun menunggu aktivasi peran</span>}<SignOutButton /></> : <Link className="novemberAccountLink" href="/auth/sign-in">Sign In</Link>}
+            {session?.user ? <>{account ? <><span className="novemberAccountIdentity">{account.full_name} · {account.role_name}</span><Link className="novemberAccountLink" href="/workspace">Dashboard</Link></> : <span className="novemberAccountIdentity">Akun menunggu aktivasi peran</span>}<SignOutButton /></> : <><Link className="novemberAccountLink" href="/auth/sign-in">Masuk</Link><Link className="novemberAccountLink" href="/auth/sign-up">Daftar</Link></>}
           </div>
           <details className="novemberMobileNav">
             <summary aria-label="Buka menu navigasi"><span></span><span></span><span></span></summary>
             <nav aria-label="Navigasi mobile">
               {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
+              {!session?.user && <><Link href="/auth/sign-in">Masuk</Link><Link href="/auth/sign-up">Daftar akun</Link></>}
             </nav>
           </details>
         </div>
