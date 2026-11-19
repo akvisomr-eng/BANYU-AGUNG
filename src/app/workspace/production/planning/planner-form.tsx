@@ -5,7 +5,8 @@ import { createProductionBatch } from "../actions";
 
 type BOM = { id: string; sku: string; product_name: string; version: string; output_quantity: string | number; unit_code: string | null };
 type Line = { id: string; code: string; name: string; site_name: string };
-type Material = { bom_id: string; sku: string; name: string; quantity_per_bom: string | number; scrap_factor: string | number; unit_code: string | null; available_quantity: string | number };
+type LotReadiness = { lot_code: string; expires_at: string | null; quality_status: string; available_quantity: string | number; warehouse_names: string; readiness_reason: string };
+type Material = { bom_id: string; sku: string; name: string; quantity_per_bom: string | number; scrap_factor: string | number; unit_code: string | null; available_quantity: string | number; blocked_quantity: string | number; lots: LotReadiness[] };
 
 const fmt = (value: number) => new Intl.NumberFormat("id-ID", { maximumFractionDigits: 4 }).format(value);
 
@@ -23,7 +24,7 @@ export function ProductionPlannerForm({ boms, lines, materials }: { boms: BOM[];
       const scrap = Number(item.scrap_factor);
       const needed = amount / output * perBom * (1 + scrap);
       const available = Number(item.available_quantity);
-      return { ...item, needed, available, shortage: Math.max(0, needed - available), sufficient: available >= needed };
+      return { ...item, needed, available, blocked: Number(item.blocked_quantity), shortage: Math.max(0, needed - available), sufficient: available >= needed };
     });
   }, [selected, amount, materials]);
   const hasShortage = requirements.some((item) => !item.sufficient);
@@ -52,23 +53,48 @@ export function ProductionPlannerForm({ boms, lines, materials }: { boms: BOM[];
       {selected && (
         <div style={{ marginTop: 24 }}>
           <h3>Estimasi kebutuhan bahan</h3>
-          <p className="muted">Perhitungan memakai kuantitas BOM, output standar BOM, dan faktor scrap. Stok tersedia dihitung dari stok fisik dikurangi reservasi pada gudang bahan baku dan kemasan yang aktif. Ini pemeriksaan indikatif, bukan reservasi atau jaminan stok saat eksekusi.</p>
+          <p className="muted">Perhitungan memakai kuantitas BOM, output standar BOM, dan faktor scrap. Stok siap hanya menghitung lot berstatus lulus QC, belum kedaluwarsa, memiliki catatan biaya, dan saldo biaya yang cocok dengan saldo fisik seluruh gudang. Lot yang belum memenuhi syarat ditampilkan terpisah sebagai stok tertahan. Ini pemeriksaan indikatif, bukan reservasi atau jaminan stok saat eksekusi.</p>
           {requirements.length === 0 ? (
             <p className="setupNotice">BOM ini belum memiliki komponen bahan. Periksa kelengkapan BOM sebelum batch dijadwalkan.</p>
           ) : (
             <>
               <div className="inventoryTableWrap">
                 <table className="inventoryTable">
-                  <thead><tr><th>Bahan / SKU</th><th>Kebutuhan estimasi</th><th>Stok tersedia</th><th>Selisih</th><th>Kesiapan</th></tr></thead>
+                  <thead><tr><th>Bahan / SKU</th><th>Kebutuhan estimasi</th><th>Stok siap</th><th>Stok tertahan</th><th>Selisih</th><th>Kesiapan</th></tr></thead>
                   <tbody>{requirements.map((item) => <tr key={item.sku}>
                     <td><strong>{item.name}</strong><small>{item.sku}</small></td>
                     <td>{fmt(item.needed)} {item.unit_code ?? ""}</td>
                     <td>{fmt(item.available)} {item.unit_code ?? ""}</td>
+                    <td>{fmt(item.blocked)} {item.unit_code ?? ""}</td>
                     <td>{item.shortage > 0 ? fmt(item.shortage) : "—"} {item.shortage > 0 ? item.unit_code ?? "" : ""}</td>
                     <td><strong>{item.sufficient ? "Cukup (indikatif)" : "Potensi kurang"}</strong></td>
                   </tr>)}</tbody>
                 </table>
               </div>
+              {requirements.some((item) => item.lots.length > 0) && (
+                <div style={{ marginTop: 18 }}>
+                  <h4>Rincian kesiapan lot</h4>
+                  {requirements.map((item) => item.lots.length > 0 && (
+                    <div key={item.sku} style={{ borderTop: "1px solid #dce5df", padding: "12px 0" }}>
+                      <strong>{item.name} · {item.sku}</strong>
+                      <div className="inventoryTableWrap">
+                        <table className="inventoryTable">
+                          <thead><tr><th>Lot</th><th>Kedaluwarsa</th><th>Gudang</th><th>Qty tersedia</th><th>Status</th></tr></thead>
+                          <tbody>{item.lots.map((lot, index) => (
+                            <tr key={item.sku + "-" + lot.lot_code + "-" + index}>
+                              <td>{lot.lot_code}</td>
+                              <td>{lot.expires_at ? new Date(lot.expires_at).toLocaleDateString("id-ID") : "—"}</td>
+                              <td>{lot.warehouse_names || "—"}</td>
+                              <td>{fmt(Number(lot.available_quantity))} {item.unit_code ?? ""}</td>
+                              <td><strong>{lot.readiness_reason}</strong></td>
+                            </tr>
+                          ))}</tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <p className={hasShortage ? "authError" : "authSuccess"} role="status">
                 {hasShortage ? "Ada bahan dengan potensi kekurangan. Tinjau pembelian atau jadwal sebelum produksi." : "Seluruh komponen memiliki stok indikatif yang mencukupi untuk jumlah rencana ini."}
               </p>
