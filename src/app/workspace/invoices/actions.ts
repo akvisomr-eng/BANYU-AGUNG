@@ -11,7 +11,7 @@ async function getInvoiceActor(ownersOnly=false) {
     SELECT p.id AS actor_id,p.organization_id,r.code AS role_code
     FROM user_profiles p JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id
     WHERE p.auth_subject=${session.user.id} AND p.status='active'
-      AND r.code IN ('OWNER','ADMIN')
+      AND r.code IN ('OWNER','ADMIN','FINANCE')
     ORDER BY CASE WHEN r.code='OWNER' THEN 0 ELSE 1 END LIMIT 1
   `;
   const row=actor[0] as {actor_id:string;organization_id:string;role_code:string}|undefined;
