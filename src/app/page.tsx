@@ -129,6 +129,7 @@ export default async function Home() {
               <div className="novemberProductBody"><h3>{product.title}</h3><p>{product.text}</p><small>{product.note}</small></div>
             </article>)}
           </div>
+          <p style={{ marginTop: 26, textAlign: "right" }}><Link className="novemberInlineLink" href="/produk">Lihat katalog produk dan ukuran yang direkomendasikan <span>↗</span></Link></p>
         </section>
 
         <section className="novemberGallery" id="galeri">
