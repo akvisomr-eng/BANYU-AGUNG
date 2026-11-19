@@ -16,7 +16,7 @@ export default async function InvoicesPage({searchParams}:{searchParams:Promise<
   const actors=await sql`
     SELECT p.organization_id,r.name AS role_name,r.code AS role_code
     FROM user_profiles p JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id
-    WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code IN ('OWNER','ADMIN')
+    WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code IN ('OWNER','ADMIN','FINANCE')
     ORDER BY r.code LIMIT 1
   `;
   const actor=actors[0] as {organization_id:string;role_name:string;role_code:string}|undefined;

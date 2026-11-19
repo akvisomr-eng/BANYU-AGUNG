@@ -9,7 +9,7 @@ type Bill={id:string;supplier_name:string;supplier_invoice_number:string;invoice
 export default async function PayablesPage({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}) {
  const {data:session}=await auth.getSession(); if(!session?.user) redirect("/auth/sign-in");
  const {sql}=await import("@/lib/db");
- const rows=await sql`SELECT p.organization_id,r.code AS role_code,r.name AS role_name FROM user_profiles p JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code IN ('OWNER','ADMIN') ORDER BY CASE WHEN r.code='OWNER' THEN 0 ELSE 1 END LIMIT 1`;
+ const rows=await sql`SELECT p.organization_id,r.code AS role_code,r.name AS role_name FROM user_profiles p JOIN user_role_assignments a ON a.user_id=p.id JOIN roles r ON r.id=a.role_id WHERE p.auth_subject=${session.user.id} AND p.status='active' AND r.code IN ('OWNER','ADMIN','FINANCE') ORDER BY CASE WHEN r.code='OWNER' THEN 0 ELSE 1 END LIMIT 1`;
  const user=rows[0] as {organization_id:string;role_code:string;role_name:string}|undefined; if(!user) redirect("/workspace?access=denied");
  const [supRaw,billRaw,summaryRaw]=await Promise.all([
   sql`SELECT id,name FROM suppliers WHERE organization_id=${user.organization_id}::uuid AND status='active' ORDER BY name LIMIT 300`,

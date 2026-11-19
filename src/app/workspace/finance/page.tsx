@@ -65,7 +65,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
       <Link className="sideLink" href="/workspace/invoices">Piutang / Invoice</Link>
       <Link className="sideLink" href="/workspace/payables">Utang Pemasok</Link>
       <Link className="sideLink" href="/workspace/purchase-orders">Pembelian</Link>
-      <Link className="sideLink" href="/workspace/finance/settings">Pemetaan Akun</Link>
+      {actor.role_code === "OWNER" && <Link className="sideLink" href="/workspace/finance/settings">Pemetaan Akun</Link>}
       <Link className="sideLink" href="/workspace/reports">Laporan</Link>
     </aside>
     <section className="workMain">
