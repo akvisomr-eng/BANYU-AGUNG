@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
@@ -13,6 +13,16 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("access") === "not-provisioned") {
+      setNotice("Akun Anda belum memiliki akses ruang kerja aktif. Jika Anda mendaftar sebagai staf, permintaan peran harus disetujui administrator. Hubungi administrator BANYU AGUNG untuk tindak lanjut.");
+    } else if (params.get("reset") === "success") {
+      setNotice("Kata sandi berhasil diperbarui. Silakan masuk menggunakan kata sandi baru.");
+    }
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,6 +49,7 @@ export default function SignInPage() {
     <p className="eyebrow">RUANG KERJA PERUSAHAAN</p>
     <h1>Masuk ke sistem</h1>
     <p className="authIntro">Gunakan akun yang telah didaftarkan oleh administrator BANYU AGUNG.</p>
+    {notice && <p className="notice" role="status">{notice}</p>}
     <form onSubmit={submit} className="authForm">
       <label htmlFor="email">Alamat email</label>
       <input id="email" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="nama@perusahaan.com"/>
