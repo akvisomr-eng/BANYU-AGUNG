@@ -149,6 +149,7 @@ export default async function ProductionPage() {
         <p className="sideLabel">OPERATIONS</p>
         <Link className="sideLink" href="/workspace">← Ringkasan</Link>
         <Link className="sideActive" href="/workspace/production">Kontrol Produksi</Link>
+        <Link className="sideLink" href="/workspace/production/planning">Rencana Batch</Link>
         <Link className="sideLink" href="/workspace/products">Produk & BOM</Link>
         <Link className="sideLink" href="/workspace/inventory">Persediaan</Link>
         <Link className="sideLink" href="/workspace/quality">Quality Control</Link>
