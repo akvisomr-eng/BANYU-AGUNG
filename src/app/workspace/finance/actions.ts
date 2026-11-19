@@ -13,7 +13,7 @@ async function getFinanceActor(ownerOnly = false) {
     JOIN user_role_assignments a ON a.user_id = p.id
     JOIN roles r ON r.id = a.role_id
     WHERE p.auth_subject = ${session.user.id} AND p.status = 'active'
-      AND r.code IN ('OWNER', 'ADMIN')
+      AND r.code IN ('OWNER', 'ADMIN', 'FINANCE')
     ORDER BY CASE WHEN r.code = 'OWNER' THEN 0 ELSE 1 END
     LIMIT 1
   `;
