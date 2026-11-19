@@ -72,6 +72,7 @@ export default async function WorkspacePage() {
         <Link className="sideLink" href="/workspace/finance">Finance & Accounting</Link>
         <Link className="sideLink" href="/workspace/invoices">Invoices / Piutang</Link>
         <Link className="sideLink" href="/workspace/payables">Utang Pemasok</Link>
+        <Link className="sideLink" href="/workspace/reports">Pusat Laporan</Link>
       </> : <>
         <Link className="sideLink" href="/workspace/inquiries">Permintaan Pelanggan</Link>
         <Link className="sideLink" href="/workspace/customers">Master Pelanggan</Link>
@@ -86,6 +87,7 @@ export default async function WorkspacePage() {
         <Link className="sideLink" href="/workspace/invoices">Invoices</Link>
         <Link className="sideLink" href="/workspace/finance">Finance & Accounting</Link>
         <Link className="sideLink" href="/workspace/payables">Utang Pemasok</Link>
+        <Link className="sideLink" href="/workspace/reports">Pusat Laporan</Link>
         <Link className="sideLink" href="/workspace/products">Master Produk</Link>
         {modules.map(m=><a className="sideLink" href="#modul" key={m[0]}>{m[0]}</a>)}
       </>}
