@@ -65,7 +65,7 @@ export function ProductionPlannerForm({ boms, lines, materials }: { boms: BOM[];
                     <td>{fmt(item.needed)} {item.unit_code ?? ""}</td>
                     <td>{fmt(item.available)} {item.unit_code ?? ""}</td>
                     <td>{item.shortage > 0 ? fmt(item.shortage) : "—"} {item.shortage > 0 ? item.unit_code ?? "" : ""}</td>
-                    <td><span className={item.sufficient ? "statusPill statusGood" : "statusPill statusWarn"}>{item.sufficient ? "Cukup (indikatif)" : "Potensi kurang"}</span></td>
+                    <td><strong>{item.sufficient ? "Cukup (indikatif)" : "Potensi kurang"}</strong></td>
                   </tr>)}</tbody>
                 </table>
               </div>
