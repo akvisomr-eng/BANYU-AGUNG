@@ -24,7 +24,32 @@ export function ProductionPlannerForm({ boms, lines, materials }: { boms: BOM[];
       const scrap = Number(item.scrap_factor);
       const needed = amount / output * perBom * (1 + scrap);
       const available = Number(item.available_quantity);
-      return { ...item, needed, available, blocked: Number(item.blocked_quantity), shortage: Math.max(0, needed - available), sufficient: available >= needed };
+      let outstanding = needed;
+      const lotAllocations = item.lots.slice().sort((a, b) => {
+        const aReady = a.readiness_reason === "Siap";
+        const bReady = b.readiness_reason === "Siap";
+        if (aReady !== bReady) return aReady ? -1 : 1;
+        if (a.expires_at === null && b.expires_at !== null) return 1;
+        if (a.expires_at !== null && b.expires_at === null) return -1;
+        const expiryOrder = (a.expires_at ?? "").localeCompare(b.expires_at ?? "");
+        return expiryOrder || a.lot_code.localeCompare(b.lot_code);
+      }).map((lot) => {
+        const ready = lot.readiness_reason === "Siap";
+        const lotAvailable = ready ? Math.max(0, Number(lot.available_quantity)) : 0;
+        const allocated = ready ? Math.min(lotAvailable, Math.max(0, outstanding)) : 0;
+        outstanding = Math.max(0, outstanding - allocated);
+        return { ...lot, ready, allocated, remainingRequirement: outstanding };
+      });
+      return {
+        ...item,
+        needed,
+        available,
+        blocked: Number(item.blocked_quantity),
+        shortage: Math.max(0, needed - available),
+        sufficient: available >= needed,
+        lotAllocations,
+        fefoShortage: Math.max(0, outstanding),
+      };
     });
   }, [selected, amount, materials]);
   const hasShortage = requirements.some((item) => !item.sufficient);
@@ -53,7 +78,7 @@ export function ProductionPlannerForm({ boms, lines, materials }: { boms: BOM[];
       {selected && (
         <div style={{ marginTop: 24 }}>
           <h3>Estimasi kebutuhan bahan</h3>
-          <p className="muted">Perhitungan memakai kuantitas BOM, output standar BOM, dan faktor scrap. Stok siap hanya menghitung lot berstatus lulus QC, belum kedaluwarsa, memiliki catatan biaya, dan saldo biaya yang cocok dengan saldo fisik seluruh gudang. Lot yang belum memenuhi syarat ditampilkan terpisah sebagai stok tertahan. Ini pemeriksaan indikatif, bukan reservasi atau jaminan stok saat eksekusi.</p>
+          <p className="muted">Perhitungan memakai kuantitas BOM, output standar BOM, dan faktor scrap. Stok siap hanya menghitung lot berstatus lulus QC, belum kedaluwarsa, memiliki catatan biaya, dan saldo biaya yang cocok dengan saldo fisik seluruh gudang. Sistem menyusun alokasi indikatif per lot dengan FEFO (kedaluwarsa terdekat diprioritaskan; lot tanpa tanggal kedaluwarsa ditempatkan terakhir). Ini simulasi baca-saja, bukan reservasi atau jaminan stok saat eksekusi.</p>
           {requirements.length === 0 ? (
             <p className="setupNotice">BOM ini belum memiliki komponen bahan. Periksa kelengkapan BOM sebelum batch dijadwalkan.</p>
           ) : (
@@ -71,21 +96,24 @@ export function ProductionPlannerForm({ boms, lines, materials }: { boms: BOM[];
                   </tr>)}</tbody>
                 </table>
               </div>
-              {requirements.some((item) => item.lots.length > 0) && (
+              {requirements.some((item) => item.lotAllocations.length > 0) && (
                 <div style={{ marginTop: 18 }}>
-                  <h4>Rincian kesiapan lot</h4>
-                  {requirements.map((item) => item.lots.length > 0 && (
+                  <h4>Simulasi alokasi lot FEFO</h4>
+                  {requirements.map((item) => item.lotAllocations.length > 0 && (
                     <div key={item.sku} style={{ borderTop: "1px solid #dce5df", padding: "12px 0" }}>
                       <strong>{item.name} · {item.sku}</strong>
+                      <p className="muted">Kebutuhan {fmt(item.needed)} {item.unit_code ?? ""} · Alokasi lot siap {fmt(item.needed - item.fefoShortage)} {item.unit_code ?? ""} · Kekurangan {fmt(item.fefoShortage)} {item.unit_code ?? ""}</p>
                       <div className="inventoryTableWrap">
                         <table className="inventoryTable">
-                          <thead><tr><th>Lot</th><th>Kedaluwarsa</th><th>Gudang</th><th>Qty tersedia</th><th>Status</th></tr></thead>
-                          <tbody>{item.lots.map((lot, index) => (
+                          <thead><tr><th>Urutan FEFO / Lot</th><th>Kedaluwarsa</th><th>Gudang tersedia</th><th>Qty siap</th><th>Alokasi simulasi</th><th>Sisa kebutuhan</th><th>Status</th></tr></thead>
+                          <tbody>{item.lotAllocations.map((lot, index) => (
                             <tr key={item.sku + "-" + lot.lot_code + "-" + index}>
-                              <td>{lot.lot_code}</td>
+                              <td>{lot.ready ? index + 1 : "—"} · {lot.lot_code}</td>
                               <td>{lot.expires_at ? new Date(lot.expires_at).toLocaleDateString("id-ID") : "—"}</td>
                               <td>{lot.warehouse_names || "—"}</td>
                               <td>{fmt(Number(lot.available_quantity))} {item.unit_code ?? ""}</td>
+                              <td><strong>{lot.allocated > 0 ? fmt(lot.allocated) : "—"}</strong> {lot.allocated > 0 ? item.unit_code ?? "" : ""}</td>
+                              <td>{fmt(lot.remainingRequirement)} {item.unit_code ?? ""}</td>
                               <td><strong>{lot.readiness_reason}</strong></td>
                             </tr>
                           ))}</tbody>
