@@ -2,12 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/server";
 import { SignOutButton } from "../../sign-out-button";
-import { createProductionBatch } from "../actions";
+import { ProductionPlannerForm } from "./planner-form";
 
 export const dynamic = "force-dynamic";
 
 type BOM = { id: string; sku: string; product_name: string; version: string; output_quantity: string | number; unit_code: string | null };
 type Line = { id: string; code: string; name: string; site_name: string };
+type Material = { bom_id: string; sku: string; name: string; quantity_per_bom: string | number; scrap_factor: string | number; unit_code: string | null; available_quantity: string | number };
 
 export default async function ProductionPlanningPage({ searchParams }: { searchParams: Promise<{ planned?: string; error?: string }> }) {
   const { data: session } = await auth.getSession();
@@ -24,7 +25,7 @@ export default async function ProductionPlanningPage({ searchParams }: { searchP
   `;
   const actor = actors[0] as { organization_id: string; role_name: string } | undefined;
   if (!actor) redirect("/workspace?access=denied");
-  const [boms, lines] = await Promise.all([
+  const [boms, lines, materials] = await Promise.all([
     sql`
       SELECT pb.id, p.sku, p.name AS product_name, pb.version, pb.output_quantity, u.code AS unit_code
       FROM product_boms pb
@@ -44,8 +45,33 @@ export default async function ProductionPlanningPage({ searchParams }: { searchP
       WHERE pl.organization_id = ${actor.organization_id}::uuid
         AND pl.is_active = true AND s.is_active = true
       ORDER BY pl.name
+    `,
+    sql`
+      SELECT pb.id AS bom_id, cp.sku, cp.name,
+        bi.quantity AS quantity_per_bom, bi.scrap_factor, u.code AS unit_code,
+        coalesce(stock.available_quantity, 0) AS available_quantity
+      FROM product_boms pb
+      JOIN product_bom_items bi ON bi.bom_id = pb.id
+      JOIN products cp ON cp.id = bi.component_product_id
+      LEFT JOIN units_of_measure u ON u.id = cp.base_unit_id
+      LEFT JOIN LATERAL (
+        SELECT sum(ib.quantity_on_hand - ib.quantity_reserved) AS available_quantity
+        FROM inventory_balances ib
+        JOIN warehouses w ON w.id = ib.warehouse_id
+          AND w.organization_id = ib.organization_id
+          AND w.is_active = true
+          AND w.warehouse_type IN ('raw_material', 'packaging')
+        WHERE ib.organization_id = pb.organization_id
+          AND ib.product_id = cp.id
+      ) stock ON true
+      WHERE pb.organization_id = ${actor.organization_id}::uuid
+        AND pb.status = 'approved'
+        AND (pb.effective_from IS NULL OR pb.effective_from <= current_date)
+        AND (pb.effective_to IS NULL OR pb.effective_to >= current_date)
+        AND cp.organization_id = pb.organization_id
+      ORDER BY cp.name
     `
-  ]) as [BOM[], Line[]];
+  ]) as [BOM[], Line[], Material[]];
   const params = await searchParams;
   const number = (value: string | number) => new Intl.NumberFormat("id-ID", { maximumFractionDigits: 4 }).format(Number(value ?? 0));
 
@@ -81,26 +107,7 @@ export default async function ProductionPlanningPage({ searchParams }: { searchP
             <small>Lengkapi produk, BOM, lokasi, dan lini produksi sebelum membuat rencana batch.</small>
           </article>
         ) : (
-          <section className="metric" style={{ marginBottom: 28 }}>
-            <h2 style={{ marginTop: 0 }}>Detail rencana produksi</h2>
-            <form action={createProductionBatch} className="authForm" style={{ maxWidth: 760 }}>
-              <label htmlFor="bom_id">Produk jadi & versi BOM</label>
-              <select id="bom_id" name="bom_id" required defaultValue="">
-                <option value="" disabled>Pilih BOM yang disetujui</option>
-                {boms.map((bom) => <option key={bom.id} value={bom.id}>{bom.sku} · {bom.product_name} — BOM {bom.version} (standar {number(bom.output_quantity)} {bom.unit_code ?? "unit"})</option>)}
-              </select>
-              <label htmlFor="production_line_id">Lini produksi</label>
-              <select id="production_line_id" name="production_line_id" required defaultValue="">
-                <option value="" disabled>Pilih lini aktif</option>
-                {lines.map((line) => <option key={line.id} value={line.id}>{line.code} · {line.name} — {line.site_name}</option>)}
-              </select>
-              <label htmlFor="planned_quantity">Jumlah rencana (satuan dasar produk)</label>
-              <input id="planned_quantity" name="planned_quantity" type="number" min="0.0001" max="1000000000" step="0.0001" required placeholder="Contoh: 1000" />
-              <label htmlFor="planned_start">Jadwal mulai (opsional)</label>
-              <input id="planned_start" name="planned_start" type="datetime-local" />
-              <button type="submit" className="primary">Simpan rencana batch</button>
-            </form>
-          </section>
+          <ProductionPlannerForm boms={boms} lines={lines} materials={materials} />
         )}
         <p className="workspaceFoot"><Link href="/workspace/production">← Kembali ke kontrol produksi</Link></p>
       </section>
