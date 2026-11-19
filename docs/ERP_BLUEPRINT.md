@@ -1,3 +1,5 @@
+> **Dokumen enterprise lengkap:** lihat [Enterprise Operating Model](./ENTERPRISE_OPERATING_MODEL.md) untuk desain ERP, CRM, HRD/HCM & Payroll, Accounting, Warehouse, MDM, IT/security dan governance; serta [Enterprise Implementation Roadmap](./ENTERPRISE_IMPLEMENTATION_ROADMAP.md) untuk status fondasi yang telah diverifikasi dan urutan delivery.
+
 # BANYU AGUNG — Enterprise Blueprint
 
 ## 1. Product principles
