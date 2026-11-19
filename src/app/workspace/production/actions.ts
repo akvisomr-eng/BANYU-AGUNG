@@ -15,7 +15,7 @@ export async function createProductionBatch(formData: FormData) {
       !/^\d{1,12}(\.\d{1,4})?$/.test(quantityRaw) ||
       !Number.isFinite(quantity) || quantity <= 0 || quantity > 1000000000 ||
       (plannedStartRaw && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(plannedStartRaw))) {
-    redirect("/workspace/production?error=invalid");
+    redirect("/workspace/production/planning?error=invalid");
   }
 
   const { data: session } = await auth.getSession();
@@ -88,11 +88,11 @@ export async function createProductionBatch(formData: FormData) {
       )
       SELECT batch_number FROM created
     `;
-    if (inserted.length === 0) redirect("/workspace/production?error=reference");
+    if (inserted.length === 0) redirect("/workspace/production/planning?error=reference");
   } catch (error) {
     if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) throw error;
-    redirect("/workspace/production?error=save");
+    redirect("/workspace/production/planning?error=save");
   }
 
-  redirect("/workspace/production?planned=1");
+  redirect("/workspace/production/planning?planned=1");
 }
