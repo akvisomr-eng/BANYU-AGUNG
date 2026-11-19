@@ -96,6 +96,8 @@ export default async function InventoryPage() {
               <td>{Number(row.quantity_on_hand).toLocaleString("id-ID")}</td>
               <td>{Number(row.quantity_reserved).toLocaleString("id-ID")}</td>
               <td>{Number(row.available_released).toLocaleString("id-ID")}</td>
+              <td>{money(Number(row.average_unit_cost??0))}</td>
+              <td>{money(Number(row.carrying_value??0))}</td>
               <td><span className={`inquiryStatus ${row.quality_status==="released"?"inquiryStatus-converted":row.quality_status==="pending"?"inquiryStatus-new":"inquiryStatus-spam"}`}>{qualityLabels[row.quality_status??""]??"Tidak diketahui"}</span></td>
               <td><span className={`inquiryStatus ${row.opening_balance_pending?"inquiryStatus-spam":"inquiryStatus-converted"}`}>{row.opening_balance_pending?"Saldo awal perlu rekonsiliasi":"Tervaluasi"}</span></td>\n              <td>{row.expires_at ? new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"Asia/Jakarta"}).format(new Date(row.expires_at)) : "—"}</td>
             </tr>)}
