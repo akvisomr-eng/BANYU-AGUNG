@@ -5,7 +5,10 @@ import { SignOutButton } from "../sign-out-button";
 
 export const dynamic = "force-dynamic";
 
-const groups = [
+type ModuleItem = [string, string, string | null, string];
+type ModuleGroup = { title: string; items: ModuleItem[] };
+
+const groups: ModuleGroup[] = [
   { title: "Corporate & master data", items: [
     ["Organization & IAM","Organisasi, site, departemen, user, role dan audit","/workspace/setup","Fondasi tersedia"],
     ["Master produk & SKU","Produk jadi, bahan baku, kemasan, satuan dan BOM","/workspace/products","Fondasi tersedia"],
