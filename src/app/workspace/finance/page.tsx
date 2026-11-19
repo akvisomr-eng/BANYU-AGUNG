@@ -64,9 +64,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
       <Link className="sideActive" href="/workspace/finance">Keuangan</Link>
       <Link className="sideLink" href="/workspace/invoices">Piutang / Invoice</Link>
       <Link className="sideLink" href="/workspace/payables">Utang Pemasok</Link>
-      <Link className="sideLink" href="/workspace/purchase-orders">Pembelian</Link>
       {actor.role_code === "OWNER" && <Link className="sideLink" href="/workspace/finance/settings">Pemetaan Akun</Link>}
-      <Link className="sideLink" href="/workspace/reports">Laporan</Link>
     </aside>
     <section className="workMain">
       <header className="workHeader"><div><p className="eyebrow">BANYU AGUNG / FINANCE</p><h1>Keuangan & Akuntansi</h1><p className="muted">Buku besar hanya menghitung jurnal yang sudah diposting · {actor.role_name}</p></div><SignOutButton /></header>
