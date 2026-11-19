@@ -67,6 +67,7 @@ export default async function WorkspacePage() {
       <Link className="brand" href="/">BANYU <span>AGUNG</span></Link>
       <p className="sideLabel">ENTERPRISE</p>
       <Link className="sideActive" href="/workspace">◫ &nbsp; Ringkasan</Link>
+      {!isFinance && <Link className="sideLink" href="/workspace/enterprise">Pusat Enterprise</Link>}
       {isFinance ? <>
         <Link className="sideLink" href="/workspace/finance">Finance & Accounting</Link>
         <Link className="sideLink" href="/workspace/invoices">Invoices / Piutang</Link>
