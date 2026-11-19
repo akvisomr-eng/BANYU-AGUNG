@@ -204,8 +204,8 @@ export default async function ProductionPage() {
         {batches.length === 0 ? (
           <article className="moduleCard"><strong>Belum ada batch produksi</strong><small>Batch akan tampil setelah dibuat melalui proses produksi yang telah disetujui.</small></article>
         ) : (
-          <div className="tableWrap">
-            <table>
+          <div className="inventoryTableWrap">
+            <table className="inventoryTable">
               <thead><tr><th>Batch / Produk</th><th>Lini / Supervisor</th><th>Rencana</th><th>Hasil</th><th>Bahan terpakai</th><th>Status</th><th>Mutu</th></tr></thead>
               <tbody>
                 {batches.map((batch) => (
