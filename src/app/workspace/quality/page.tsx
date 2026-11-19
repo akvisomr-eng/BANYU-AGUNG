@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 
 type Lot={id:string;lot_code:string;product_sku:string;product_name:string;quality_status:string;received_at:string|null;expires_at:string|null;supplier_name:string|null;warehouse_names:string|null};
 type Inspection={inspection_number:string;lot_code:string;product_name:string;result:string;report_reference:string|null;inspected_at:string;inspector_name:string|null};
+type BatchQA={batch_number:string;product_sku:string;product_name:string;produced_quantity:string|number;rejected_quantity:string|number;status:string;quality_status:string;test_count:string|number;failed_count:string|number};
+type QATest={test_number:string;sample_type:string;sample_point:string;sampled_at:string;batch_number:string|null;lot_code:string|null;product_name:string|null;laboratory_name:string|null;report_reference:string|null;status:string;result_count:string|number;critical_failures:string|number};
 
 const qualityLabels:Record<string,string>={pending:"Menunggu QC",quarantined:"Karantina",released:"Lulus QC",rejected:"Ditolak",expired:"Kedaluwarsa"};
 
@@ -45,6 +47,38 @@ export default async function QualityPage({searchParams}:{searchParams:Promise<{
     WHERE qi.organization_id=${actor.organization_id}::uuid
     ORDER BY qi.inspected_at DESC LIMIT 50
   ` as Inspection[];
+  const [batchQA, qaTests] = await Promise.all([
+    sql`
+      SELECT b.batch_number,p.sku AS product_sku,p.name AS product_name,
+        b.produced_quantity,b.rejected_quantity,b.status,b.quality_status,
+        count(DISTINCT q.id)::int AS test_count,
+        count(DISTINCT q.id) FILTER (WHERE q.status='failed')::int AS failed_count
+      FROM production_batches b
+      JOIN products p ON p.id=b.product_id
+      LEFT JOIN qa_tests q ON q.batch_id=b.id
+      WHERE b.organization_id=${actor.organization_id}::uuid
+        AND b.status IN ('completed','quality_hold')
+      GROUP BY b.id,p.sku,p.name
+      ORDER BY b.completed_at DESC NULLS LAST,b.created_at DESC
+      LIMIT 30
+    `,
+    sql`
+      SELECT q.test_number,q.sample_type,q.sample_point,q.sampled_at,q.status,
+        q.laboratory_name,q.report_reference,b.batch_number,l.lot_code,p.name AS product_name,
+        count(r.id)::int AS result_count,
+        count(r.id) FILTER (WHERE qp.is_critical=true AND r.within_limit=false)::int AS critical_failures
+      FROM qa_tests q
+      LEFT JOIN production_batches b ON b.id=q.batch_id AND b.organization_id=q.organization_id
+      LEFT JOIN inventory_lots l ON l.id=q.lot_id AND l.organization_id=q.organization_id
+      LEFT JOIN products p ON p.id=coalesce(b.product_id,l.product_id)
+      LEFT JOIN qa_test_results r ON r.qa_test_id=q.id
+      LEFT JOIN qa_parameters qp ON qp.id=r.parameter_id
+      WHERE q.organization_id=${actor.organization_id}::uuid
+      GROUP BY q.id,b.batch_number,l.lot_code,p.name
+      ORDER BY q.sampled_at DESC
+      LIMIT 50
+    `
+  ]) as [BatchQA[], QATest[]];
   const params=await searchParams;
 
   return (
@@ -68,6 +102,33 @@ export default async function QualityPage({searchParams}:{searchParams:Promise<{
           <article className="metric"><span>Riwayat pemeriksaan</span><strong>{history.length}</strong><small>Maksimal 50 catatan terbaru</small></article>
           <article className="metric"><span>Hak pelepasan</span><strong className="metricText">{actor.role_code==="OWNER"?"OWNER":"TERBATAS"}</strong><small>Hanya OWNER yang dapat meluluskan lot</small></article>
         </div>
+        <h2>Quality Assurance Produksi</h2>
+        <p className="muted">Pantau batch selesai/tertahan, pengujian sampel, hasil parameter, dan temuan kritis. Status QC batch tidak diubah dari panel pemantauan ini.</p>
+        <div className="metricGrid">
+          <article className="metric"><span>Batch menunggu keputusan QC</span><strong>{batchQA.filter(b=>b.quality_status==="pending").length}</strong><small>Batch selesai / ditahan dengan status pending</small></article>
+          <article className="metric"><span>Pengujian laboratorium</span><strong>{qaTests.length}</strong><small>Maksimal 50 pengujian terbaru</small></article>
+          <article className="metric"><span>Pengujian gagal</span><strong>{qaTests.filter(t=>t.status==="failed").length}</strong><small>Perlu evaluasi dan tindak lanjut</small></article>
+          <article className="metric"><span>Temuan parameter kritis</span><strong>{qaTests.reduce((n,t)=>n+Number(t.critical_failures),0)}</strong><small>Nilai di luar batas parameter kritis</small></article>
+        </div>
+        <h3>Batch produksi menunggu keputusan</h3>
+        {batchQA.length===0 ? <article className="moduleCard"><small>Belum ada batch selesai atau tertahan yang memerlukan pemantauan QA.</small></article> :
+          <div className="orderList">{batchQA.map(b=><article className="orderItem" key={b.batch_number}>
+            <div><span className="inquiryType">{b.batch_number} · {b.quality_status==="pending"?"Menunggu keputusan":b.quality_status==="released"?"Lulus QA":"Ditolak QA"}</span>
+              <h3>{b.product_sku} · {b.product_name}</h3>
+              <small>Hasil {Number(b.produced_quantity).toLocaleString("id-ID")} · Reject {Number(b.rejected_quantity).toLocaleString("id-ID")} · {b.test_count} pengujian · {b.failed_count} gagal</small>
+            </div>
+          </article>)}</div>
+        }
+        <h3>Pengujian sampel terbaru</h3>
+        {qaTests.length===0 ? <article className="moduleCard"><small>Belum ada pengujian QA yang ditautkan ke lot atau batch.</small></article> :
+          <div className="orderList">{qaTests.map(t=><article className="orderItem" key={t.test_number}>
+            <div><span className="inquiryType">{t.test_number} · {t.status}</span>
+              <h3>{t.sample_point} · {t.sample_type}</h3>
+              <small>{t.batch_number??t.lot_code??"Sampel belum ditautkan"} · {t.product_name??"Produk belum diketahui"} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Jakarta"}).format(new Date(t.sampled_at))}</small>
+              <small>{t.laboratory_name??"Laboratorium belum dicatat"} · {t.report_reference??"Referensi laporan belum dicatat"} · {t.result_count} parameter · {t.critical_failures} temuan kritis</small>
+            </div>
+          </article>)}</div>
+        }
         <h2>Lot menunggu pemeriksaan</h2>
         {lots.length===0 ? <article className="moduleCard"><strong>Tidak ada lot yang menunggu pemeriksaan</strong><small>Lot baru akan muncul setelah penerimaan barang diposting.</small></article> :
           <div className="qualityList">{lots.map(lot=><article className="qualityItem" key={lot.id}>
