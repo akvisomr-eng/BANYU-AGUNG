@@ -39,6 +39,7 @@ export default function SignInPage() {
     <p className="eyebrow">RUANG KERJA PERUSAHAAN</p>
     <h1>Masuk ke sistem</h1>
     <p className="authIntro">Gunakan akun yang telah didaftarkan oleh administrator BANYU AGUNG.</p>
+    <p className="notice" role="status">Jika baru memperbarui kata sandi, masuklah dengan kata sandi baru. Akun staf memerlukan persetujuan administrator sebelum dapat menggunakan ruang kerja.</p>
     <form onSubmit={submit} className="authForm">
       <label htmlFor="email">Alamat email</label>
       <input id="email" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="nama@perusahaan.com"/>
