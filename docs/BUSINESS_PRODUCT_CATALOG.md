@@ -13,7 +13,7 @@ Mulai dengan portofolio ramping untuk menekan investasi cetakan, stok kemasan, k
 4. **Botol PET 330 mL** — hotel, rapat, restoran, katering, acara, dan paket hospitality; idealnya berbasis kontrak.
 5. **Jeriken/botol 5 L** — tahap kedua untuk rumah tangga, perjalanan, pantry kantor, dan kebutuhan keluarga.
 
-**Tahap uji pasar:** mulai dari 19 L dan 600 mL. Tambahkan 1.500 mL dan 330 mL setelah permintaan B2B/retail tervalidasi. 5 L menjadi ekspansi setelah pemasok kemasan, line capability, dan economics dikonfirmasi. Gelas/cup 220 mL tidak direkomendasikan sebagai produk awal karena volume kecil, biaya kemasan per liter, limbah kemasan, dan persaingan harga; layani hanya bila ada kontrak event/institusi yang menjamin volume.
+**Tahap validasi internal (bukan tes pasar):** mulai dari 19 L dan 600 mL. Sampel riset dan pengembangan yang memperoleh pengecualian SNI tidak boleh diperjualbelikan atau dipindahtangankan dan tidak dapat digunakan untuk tes pasar berdasarkan Permenperin 62/2024. Peluncuran pasar hanya setelah seluruh izin dan sertifikasi yang berlaku diperoleh. Tambahkan 1.500 mL dan 330 mL setelah permintaan B2B/retail tervalidasi. 5 L menjadi ekspansi setelah pemasok kemasan, line capability, dan economics dikonfirmasi. Gelas/cup 220 mL tidak direkomendasikan sebagai produk awal karena volume kecil, biaya kemasan per liter, limbah kemasan, dan persaingan harga; layani hanya bila ada kontrak event/institusi yang menjamin volume.
 
 ## 2. Katalog rancangan
 
