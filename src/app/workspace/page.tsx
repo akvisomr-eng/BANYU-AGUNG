@@ -15,7 +15,7 @@ export default async function WorkspacePage() {
   const { sql } = await import("@/lib/db");
 
   const rows = await sql`
-    SELECT p.full_name, p.email, r.name AS role_name, r.code AS role_code
+    SELECT p.id AS profile_id, p.organization_id, p.full_name, p.email, r.name AS role_name, r.code AS role_code
     FROM user_profiles p
     JOIN user_role_assignments ura ON ura.user_id = p.id
     JOIN roles r ON r.id = ura.role_id
@@ -24,20 +24,20 @@ export default async function WorkspacePage() {
     ORDER BY r.code
     LIMIT 1
   `;
-  const profile = rows[0] as { full_name: string; email: string; role_name: string; role_code: string } | undefined;
+  const profile = rows[0] as { profile_id: string; organization_id: string; full_name: string; email: string; role_name: string; role_code: string } | undefined;
   if (!profile) redirect("/auth/sign-in?access=not-provisioned");
   const isFinance = profile.role_code === "FINANCE";
   const isOwner = profile.role_code === "OWNER";
   const readinessRows = isFinance ? [] : await sql`
     SELECT
-      (SELECT count(*) FROM sites WHERE organization_id=${rows[0].organization_id}::uuid AND is_active=true)::int AS sites,
-      (SELECT count(*) FROM warehouses WHERE organization_id=${rows[0].organization_id}::uuid AND is_active=true)::int AS warehouses,
-      (SELECT count(*) FROM products WHERE organization_id=${rows[0].organization_id}::uuid AND is_active=true)::int AS products,
-      (SELECT count(*) FROM customers WHERE organization_id=${rows[0].organization_id}::uuid)::int AS customers,
-      (SELECT count(*) FROM suppliers WHERE organization_id=${rows[0].organization_id}::uuid AND status='active')::int AS suppliers,
-      (SELECT count(*) FROM units_of_measure WHERE organization_id=${rows[0].organization_id}::uuid)::int AS units,
-      (SELECT count(*) FROM chart_of_accounts WHERE organization_id=${rows[0].organization_id}::uuid AND is_active=true)::int AS accounts,
-      (SELECT count(*) FROM accounting_config WHERE organization_id=${rows[0].organization_id}::uuid
+      (SELECT count(*) FROM sites WHERE organization_id=${profile.organization_id}::uuid AND is_active=true)::int AS sites,
+      (SELECT count(*) FROM warehouses WHERE organization_id=${profile.organization_id}::uuid AND is_active=true)::int AS warehouses,
+      (SELECT count(*) FROM products WHERE organization_id=${profile.organization_id}::uuid AND is_active=true)::int AS products,
+      (SELECT count(*) FROM customers WHERE organization_id=${profile.organization_id}::uuid)::int AS customers,
+      (SELECT count(*) FROM suppliers WHERE organization_id=${profile.organization_id}::uuid AND status='active')::int AS suppliers,
+      (SELECT count(*) FROM units_of_measure WHERE organization_id=${profile.organization_id}::uuid)::int AS units,
+      (SELECT count(*) FROM chart_of_accounts WHERE organization_id=${profile.organization_id}::uuid AND is_active=true)::int AS accounts,
+      (SELECT count(*) FROM accounting_config WHERE organization_id=${profile.organization_id}::uuid
         AND accounts_receivable_id IS NOT NULL AND accounts_payable_id IS NOT NULL
         AND sales_revenue_id IS NOT NULL AND purchase_expense_id IS NOT NULL
         AND output_tax_id IS NOT NULL AND input_tax_id IS NOT NULL
