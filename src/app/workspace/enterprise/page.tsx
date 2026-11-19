@@ -73,7 +73,7 @@ export default async function EnterpriseHubPage() {
         <div><p className="eyebrow">BANYU AGUNG / ENTERPRISE OPERATING SYSTEM</p><h1>Pusat Manajemen Enterprise</h1><p className="muted">Arsitektur modul, cakupan proses, dan status implementasi · {actor.role_name}</p></div>
         <SignOutButton/>
       </header>
-      <div className="notice">Satu perusahaan · satu sumber data · kontrol akses dan audit terpusat. Status di bawah membedakan fitur yang sudah memiliki fondasi aplikasi dari modul yang masih dalam roadmap. "Fondasi tersedia" bukan pernyataan bahwa modul telah lulus UAT atau siap untuk transaksi komersial.</div>
+      <div className="notice">Satu perusahaan · satu sumber data · kontrol akses dan audit terpusat. Status di bawah membedakan fitur yang sudah memiliki fondasi aplikasi dari modul yang masih dalam roadmap. &quot;Fondasi tersedia&quot; bukan pernyataan bahwa modul telah lulus UAT atau siap untuk transaksi komersial.</div>
       <div className="metricGrid">
         <article className="metric"><span>Modul dalam peta enterprise</span><strong>{allModules.length}</strong><small>Corporate, ERP, CRM, HR, Finance, Quality, IT dan governance</small></article>
         <article className="metric"><span>Fondasi aplikasi tersedia</span><strong>{foundationCount}</strong><small>Rute aktif dan fitur dasar yang telah ada</small></article>
