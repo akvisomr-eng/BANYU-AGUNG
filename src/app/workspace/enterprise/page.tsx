@@ -51,6 +51,10 @@ export default async function EnterpriseHubPage() {
   const actor = rows[0] as {full_name:string;email:string;role_code:string;role_name:string}|undefined;
   if (!actor) redirect("/workspace?access=denied");
 
+  const allModules = groups.flatMap(group => group.items);
+  const foundationCount = allModules.filter(item => ["Fondasi tersedia", "Parsial", "Fondasi database"].includes(item[3])).length;
+  const roadmapCount = allModules.filter(item => ["Belum tersedia", "Blueprint"].includes(item[3])).length;
+
   return <main className="workspace">
     <aside className="side">
       <Link className="brand" href="/">BANYU <span>AGUNG</span></Link>
@@ -68,9 +72,9 @@ export default async function EnterpriseHubPage() {
       </header>
       <div className="notice">Satu perusahaan · satu sumber data · kontrol akses dan audit terpusat. Status di bawah membedakan fitur yang sudah memiliki fondasi aplikasi dari modul yang masih dalam roadmap. "Fondasi tersedia" bukan pernyataan bahwa modul telah lulus UAT atau siap untuk transaksi komersial.</div>
       <div className="metricGrid">
-        <article className="metric"><span>Modul dalam peta enterprise</span><strong>18</strong><small>Corporate, ERP, CRM, HR, Finance, Quality, IT dan governance</small></article>
-        <article className="metric"><span>Fondasi aplikasi tersedia</span><strong>8</strong><small>Rute aktif dan fitur dasar yang telah ada</small></article>
-        <article className="metric"><span>Modul dalam pengembangan roadmap</span><strong>10</strong><small>Termasuk payroll, production execution dan BI</small></article>
+        <article className="metric"><span>Modul dalam peta enterprise</span><strong>{allModules.length}</strong><small>Corporate, ERP, CRM, HR, Finance, Quality, IT dan governance</small></article>
+        <article className="metric"><span>Fondasi aplikasi tersedia</span><strong>{foundationCount}</strong><small>Rute aktif dan fitur dasar yang telah ada</small></article>
+        <article className="metric"><span>Modul dalam pengembangan roadmap</span><strong>{roadmapCount}</strong><small>Termasuk payroll, production execution dan BI</small></article>
         <article className="metric"><span>Kontrol utama</span><strong>Maker–checker</strong><small>Approval, tenant isolation dan audit trail</small></article>
       </div>
       {groups.map(group=><section key={group.title}>
