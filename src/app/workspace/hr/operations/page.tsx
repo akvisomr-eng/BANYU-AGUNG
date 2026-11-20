@@ -88,6 +88,7 @@ export default async function HROperationsPage({ searchParams }: {
         <Link className="sideLink" href="/workspace">← Ringkasan</Link>
         <Link className="sideLink" href="/workspace/hr">Data Karyawan</Link>
         <Link className="sideActive" href="/workspace/hr/operations">Absensi & Cuti</Link>
+        <Link className="sideLink" href="/workspace/hr/shifts">Jadwal Shift</Link>
         <Link className="sideLink" href="/workspace/hr/reports">Laporan HR</Link>
         <Link className="sideLink" href="/workspace/enterprise">Pusat Enterprise</Link>
       </aside>
@@ -99,7 +100,7 @@ export default async function HROperationsPage({ searchParams }: {
         </header>
         <div className="inventoryNotice">
           Pencatatan dan persetujuan tahap awal dilakukan OWNER / ADMIN. Waktu absensi dicatat dalam zona WIB.
-          Modul ini belum mengelola jadwal shift, perangkat biometrik, saldo cuti, payroll, atau pemotongan gaji.
+          Jam keterlambatan dihitung otomatis dari shift aktif karyawan jika tersedia; tanpa penugasan shift, status mengikuti pilihan operator. Perangkat biometrik, saldo cuti, dan payroll belum tersedia.
           Persetujuan cuti belum otomatis mengubah catatan absensi.
         </div>
         {params.attendance === "created" && <p className="authSuccess" role="status">Catatan kehadiran tersimpan dan masuk audit.</p>}
