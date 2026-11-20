@@ -28,7 +28,7 @@ const groups: ModuleGroup[] = [
     ["Accounting & GL","COA, journal, posting, AP/AR dan financial close","/workspace/finance","Fondasi tersedia"],
     ["Treasury & bank reconciliation","Cash/bank, payment, statement matching dan cash forecast",null,"Belum tersedia"],
     ["Budget & controlling","Budget, cost center, variance, profitability dan CAPEX",null,"Belum tersedia"],
-    ["HRD & HCM","Employee lifecycle, recruitment, contracts, shift, leave, K3",null,"Fondasi database"],
+    ["HRD & HCM","Direktori karyawan dan registrasi master pegawai; lifecycle, kontrak, shift, leave, K3 bertahap","/workspace/hr","Fondasi aplikasi awal"],
     ["Payroll","Components, BPJS, PPh 21, THR, payroll approval, payslip",null,"Belum tersedia"],
     ["Legal, risk & compliance","Permit, SNI, BPOM, environmental, contracts, risk register",null,"Belum tersedia"],
     ["Enterprise BI & reports","Management reports, KPI, forecasting, exports",null,"Belum tersedia"],
@@ -66,6 +66,7 @@ export default async function EnterpriseHubPage() {
       <Link className="sideActive" href="/workspace/enterprise">Pusat Enterprise</Link>
       <Link className="sideLink" href="/workspace/setup">Master & konfigurasi</Link>
       <Link className="sideLink" href="/workspace/finance">Finance & Accounting</Link>
+      <Link className="sideLink" href="/workspace/hr">HRD & Karyawan</Link>
       <Link className="sideLink" href="/workspace">Kembali ke dashboard</Link>
     </aside>
     <section className="workMain">
