@@ -48,6 +48,10 @@ jobs:
             echo "Applying $migration"
             psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f "$migration"
           done
+      - name: Verify HR shift scheduling and tenant isolation
+        env:
+          PGPASSWORD: postgres
+        run: psql -h 127.0.0.1 -U postgres -d banyu_agung_ci -v ON_ERROR_STOP=1 -f database/tests/hr_shift_scheduling_regressions.sql
       - name: Verify finance and payables invariants
         env:
           PGPASSWORD: postgres
