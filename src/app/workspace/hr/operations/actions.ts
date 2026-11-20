@@ -48,22 +48,45 @@ export async function recordAttendance(formData: FormData) {
   try {
     const rows = await sql`
       WITH valid_employee AS (
-        SELECT id FROM employees
-        WHERE id = ${employeeId}::uuid
-          AND organization_id = ${actor.organization_id}::uuid
-          AND employment_status = 'active'
+        SELECT e.id, scheduled.start_time, scheduled.grace_minutes
+        FROM employees e
+        LEFT JOIN LATERAL (
+          SELECT t.start_time, t.grace_minutes
+          FROM hr_employee_shift_assignments a
+          JOIN hr_shift_templates t
+            ON t.id = a.shift_template_id AND t.organization_id = a.organization_id
+          WHERE a.employee_id = e.id
+            AND a.organization_id = e.organization_id
+            AND a.effective_from <= ${workDate}::date
+            AND (a.effective_to IS NULL OR a.effective_to >= ${workDate}::date)
+            AND t.is_active = true
+          ORDER BY a.effective_from DESC
+          LIMIT 1
+        ) scheduled ON true
+        WHERE e.id = ${employeeId}::uuid
+          AND e.organization_id = ${actor.organization_id}::uuid
+          AND e.employment_status = 'active'
       ), created AS (
         INSERT INTO attendance_records (
           organization_id, employee_id, work_date, check_in, check_out,
           attendance_status, source, approved_by, notes
         )
-        SELECT ${actor.organization_id}::uuid, id, ${workDate}::date,
+        SELECT ${actor.organization_id}::uuid, v.id, ${workDate}::date,
           CASE WHEN ${checkIn} = '' THEN NULL
             ELSE ((${workDate}::date + ${checkIn}::time) AT TIME ZONE 'Asia/Jakarta') END,
           CASE WHEN ${checkOut} = '' THEN NULL
             ELSE ((${workDate}::date + ${checkOut}::time) AT TIME ZONE 'Asia/Jakarta') END,
-          ${status}, 'manual', ${actor.actor_id}::uuid, NULLIF(${notes}, '')
-        FROM valid_employee
+          CASE
+            WHEN ${status} IN ('present', 'late') AND ${checkIn} <> ''
+              AND v.start_time IS NOT NULL
+              AND ${checkIn}::time > (v.start_time + make_interval(mins => v.grace_minutes))::time
+              THEN 'late'
+            WHEN ${status} IN ('present', 'late') AND ${checkIn} <> ''
+              AND v.start_time IS NOT NULL THEN 'present'
+            ELSE ${status}
+          END,
+          'manual', ${actor.actor_id}::uuid, NULLIF(${notes}, '')
+        FROM valid_employee v
         RETURNING id, employee_id, work_date, attendance_status
       ), logged AS (
         INSERT INTO audit_logs (organization_id, actor_user_id, action, entity_type, entity_id, after_data)
