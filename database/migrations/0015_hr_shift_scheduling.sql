@@ -1,4 +1,5 @@
 -- HR shift patterns and effective-dated employee assignments.
+CREATE UNIQUE INDEX IF NOT EXISTS employees_id_organization_id_key ON employees (id, organization_id);
 -- Safe additive migration: no existing attendance rows are rewritten.
 CREATE TABLE IF NOT EXISTS hr_shift_templates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
