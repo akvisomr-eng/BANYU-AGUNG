@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth/server";
-import { SignOutButton } from "./workspace/sign-out-button";
 
 export const dynamic = "force-dynamic";
 
@@ -48,14 +46,7 @@ const navItems = [
   ["Galeri", "#galeri"], ["Mutu", "#mutu"], ["Kemitraan", "#mitra"], ["Kontak", "#kontak"],
 ];
 
-export default async function Home() {
-  const { data: session } = await auth.getSession();
-  let account: { full_name: string; role_name: string } | null = null;
-  if (session?.user) {
-    const { sql } = await import("@/lib/db");
-    const rows = await sql`SELECT p.full_name, r.name AS role_name FROM user_profiles p JOIN user_role_assignments ura ON ura.user_id = p.id JOIN roles r ON r.id = ura.role_id WHERE p.auth_subject = ${session.user.id} AND p.status = 'active' ORDER BY r.code LIMIT 1`;
-    account = (rows[0] as { full_name: string; role_name: string } | undefined) ?? null;
-  }
+export default function Home() {
   return (
     <div className="novemberSite">
       <header className="novemberHeader">
@@ -66,16 +57,16 @@ export default async function Home() {
           </Link>
           <nav className="novemberDesktopNav" aria-label="Navigasi utama">
             {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-              {session?.user ? <>{account && <a href="/workspace">Dashboard · {account.role_name}</a>}<SignOutButton /></> : <><Link href="/auth/sign-in">Masuk</Link><Link href="/auth/sign-up" className="novemberAccountLink">Daftar</Link></>}
+              <Link href="/auth/sign-in">Masuk</Link><Link href="/auth/sign-up" className="novemberAccountLink">Daftar</Link>
           </nav>
           <div className="novemberAccountNav">
-            {session?.user ? <>{account ? <><span className="novemberAccountIdentity">{account.full_name} · {account.role_name}</span><Link className="novemberAccountLink" href="/workspace">Dashboard</Link></> : <span className="novemberAccountIdentity">Akun menunggu aktivasi peran</span>}<SignOutButton /></> : <><Link className="novemberAccountLink" href="/auth/sign-in">Masuk</Link><Link className="novemberAccountLink" href="/auth/sign-up">Daftar</Link></>}
+            <Link className="novemberAccountLink" href="/auth/sign-in">Masuk</Link><Link className="novemberAccountLink" href="/auth/sign-up">Daftar</Link>
           </div>
           <details className="novemberMobileNav">
             <summary aria-label="Buka menu navigasi"><span></span><span></span><span></span></summary>
             <nav aria-label="Navigasi mobile">
               {navItems.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-              {!session?.user && <><Link href="/auth/sign-in">Masuk</Link><Link href="/auth/sign-up">Daftar akun</Link></>}
+              <Link href="/auth/sign-in">Masuk</Link><Link href="/auth/sign-up">Daftar akun</Link>
             </nav>
           </details>
         </div>
