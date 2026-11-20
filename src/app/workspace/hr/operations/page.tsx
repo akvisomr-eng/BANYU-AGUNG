@@ -88,6 +88,7 @@ export default async function HROperationsPage({ searchParams }: {
         <Link className="sideLink" href="/workspace">← Ringkasan</Link>
         <Link className="sideLink" href="/workspace/hr">Data Karyawan</Link>
         <Link className="sideActive" href="/workspace/hr/operations">Absensi & Cuti</Link>
+        <Link className="sideLink" href="/workspace/hr/reports">Laporan HR</Link>
         <Link className="sideLink" href="/workspace/enterprise">Pusat Enterprise</Link>
       </aside>
       <section className="workMain">
