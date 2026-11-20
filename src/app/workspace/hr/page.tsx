@@ -79,6 +79,7 @@ export default async function HRPage({ searchParams }: {
         <p className="sideLabel">HUMAN RESOURCES</p>
         <Link className="sideLink" href="/workspace">← Ringkasan</Link>
         <Link className="sideActive" href="/workspace/hr">Data Karyawan</Link>
+        <Link className="sideLink" href="/workspace/hr/operations">Absensi & Cuti</Link>
         <Link className="sideLink" href="/workspace/enterprise">Pusat Enterprise</Link>
         <Link className="sideLink" href="/workspace/setup">Master Lokasi</Link>
       </aside>
@@ -140,7 +141,7 @@ export default async function HRPage({ searchParams }: {
               <td>{statusLabels[employee.employment_status] ?? employee.employment_status}</td>
             </tr>)}</tbody>
           </table></div>}
-        <p className="workspaceFoot">Perubahan data master dilakukan oleh OWNER / ADMIN dan tercatat dalam audit log. Modul lanjutan: kontrak, absensi, cuti, payroll, approval dan ESS.</p>
+        <p className="workspaceFoot">Perubahan data master dilakukan oleh OWNER / ADMIN dan tercatat dalam audit log. Modul lanjutan: kontrak, payroll, approval bertingkat dan ESS.</p>
       </section>
     </main>
   );
