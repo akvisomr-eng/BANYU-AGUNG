@@ -147,7 +147,7 @@ export default async function HRShiftsPage({ searchParams }: {
           <td>{a.effective_from}</td><td>{a.effective_to ?? "Tanpa batas akhir"}</td><td>{a.notes ?? "—"}</td>
         </tr>)}</tbody>
        </table></div>}
-      <p className="workspaceFoot">Akses OWNER / ADMIN, data tenant-scoped, dan seluruh pembuatan pola serta penugasan dicatat pada audit log. Perhitungan keterlambatan berdasarkan shift menjadi tahap integrasi berikutnya.</p>
+      <p className="workspaceFoot">Akses OWNER / ADMIN, data tenant-scoped, dan seluruh pembuatan pola serta penugasan dicatat pada audit log. Absensi harian memakai pola shift aktif untuk menentukan status terlambat sesuai toleransi yang ditetapkan.</p>
     </section>
   </main>;
 }
